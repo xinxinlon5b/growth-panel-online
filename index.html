@@ -269,11 +269,86 @@ mark.kterm:focus-visible{outline:2px solid var(--green);outline-offset:1px}
 .sort-btn{border:1px solid #cfd8d0;background:#fff;color:#4a6a55;border-radius:7px;width:22px;height:22px;line-height:1;font-size:11px;cursor:pointer;padding:0;transition:.12s}
 .sort-btn:hover{background:var(--green);color:#fff;border-color:var(--green);transform:translateY(-1px)}
 .sort-btn:active{transform:scale(.94)}
+/* ===== 移动端适配 (<=900px) 2026-09-08 ===== */
+.nav-hamburger{display:none}
+.nav-overlay{display:none}
+@media (max-width:900px){
+  /* 汉堡按钮固定右上 */
+  .nav-hamburger{display:grid;place-items:center;position:fixed;top:12px;right:12px;z-index:80;width:42px;height:42px;border:0;border-radius:12px;background:rgba(20,92,66,.92);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  /* 遮罩 */
+  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(15,30,25,.45);z-index:70;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+  .nav-overlay.show{display:block}
+  /* 侧栏变抽屉(默认移出屏外) */
+  .shell{display:block}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:75;width:min(80vw,300px);padding:24px 14px;transform:translateX(-105%);transition:transform .28s cubic-bezier(.2,.8,.25,1);box-shadow:12px 0 40px rgba(0,0,0,.25)}
+  .sidebar.open{transform:translateX(0)}
+  body.nav-open{overflow:hidden}
+  /* 主区全宽 */
+  main{width:100%;padding:18px 14px 40px}
+  /* 顶栏紧凑 */
+  .topbar{padding-bottom:12px}
+  .topbar h1{font-size:19px}
+  .crumb{font-size:10.5px;word-break:break-all}
+  /* 内容区网格单列化 */
+  .home-quick{grid-template-columns:1fr}
+  .dir-grid{grid-template-columns:1fr}
+  .sub-row{grid-template-columns:34px 1fr;gap:8px;padding:12px 12px}
+  .sub-row .go,.sub-row .cnt{grid-column:2;text-align:left}
+  /* 场景向导/自由拼装: 侧栏折叠到顶部 */
+  .comb-wrap,.scen-wrap{flex-direction:column}
+  .comb-right{width:100%;position:static;margin-top:10px}
+  .comb-main,.scen-main{width:100%}
+  /* 模态全屏化 */
+  .mask{padding:0;align-items:flex-end}
+  .modal{max-width:100%;max-height:94vh;border-radius:20px 20px 0 0;padding:20px 14px}
+  .modal h2{font-size:18px}
+  .modal p,.modal li{font-size:13px}
+  /* 行内表格 grid 允许横向滚动(原有 overflow-x:auto 已生效, 这里兜底 padding) */
+  #mBody table,.modal table{display:block;overflow-x:auto;white-space:nowrap}
+  #mBody table td,#mBody table th,.modal table td,.modal table th{white-space:normal}
+  /* 视频/卡片等 auto-fit 网格自然单列; 但部分卡片内容大, 微调 padding */
+  .vl-card,.dir-card,.mc-cluster,.mg-card,.path-card,.func,.task-card{padding:14px}
+  /* 让正文行宽可读 */
+  #content p,#content li,#mBody p,#mBody li{font-size:14px;line-height:1.85;word-break:break-word}
+  #content h1,#mBody h1{font-size:20px}
+  #content h2,#mBody h2{font-size:17px}
+  #content h3,#mBody h3{font-size:15px}
+  .hero h2{font-size:22px}
+  /* 顶栏 logo 区上移避免被汉堡挡住? 汉堡在右, 标题在左, 无需 */
+  .search-row{flex-direction:column;align-items:stretch}
+  .search-box{min-width:0}
+  .ask-btn{width:100%}
+  .tier-row,.chip-row{flex-wrap:wrap}
+  /* 文档卡片网格(kb/map 等) */
+  .doc-grid,.card-grid{grid-template-columns:1fr !important}
+  .crumbs,.doc-actions{flex-wrap:wrap}
+  /* 读书书架: 卡片横滑或单列 */
+  .book-shelf,.book-cards,.shelf{grid-template-columns:1fr !important;overflow-x:visible}
+  .book-card{padding:14px}
+  /* 读书页移动端: 书架卡整宽折行, 章目录在正文上方 */
+  .course-book-card{flex:1 1 100% !important;max-width:100% !important}
+  .course-shelf{flex-direction:column}
+  .course-wrap{flex-direction:column !important}
+  .course-ch-col{flex:1 1 100% !important;width:100%;margin-bottom:4px}
+  .course-body{flex:1 1 100% !important;width:100% !important}
+  .course-body #courseReader{padding:16px 14px}
+  /* topbar 里隐藏不太重要的 right */
+  .topbar .tb-right{display:none}
+}
+@media (max-width:480px){
+  main{padding:14px 10px 36px}
+  .modal{padding:18px 10px}
+  .nav-hamburger{width:38px;height:38px;top:10px;right:10px;font-size:18px}
+  .brand{flex-direction:row}
+  .sidebar{width:84vw}
+}
 </style>
 </head>
 <body>
+<button class="nav-hamburger" id="navHamburger" onclick="toggleNav()" aria-label="菜单">☰</button>
+<div class="nav-overlay" id="navOverlay" onclick="toggleNav()"></div>
 <div class="shell">
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-mark">企</div>
       <div><strong>成长系统</strong><small>Enterprise AI Growth</small></div>
@@ -622,6 +697,26 @@ function trustBadge(c){
 }
 
 /* ================= 导航 ================= */
+/* 移动端汉堡菜单 */
+function toggleNav(){
+  var sb = document.getElementById("sidebar");
+  var ov = document.getElementById("navOverlay");
+  if(!sb) return;
+  var open = sb.classList.toggle("open");
+  if(ov) ov.classList.toggle("show", open);
+  document.body.classList.toggle("nav-open", open);
+}
+function closeNav(){
+  var sb = document.getElementById("sidebar");
+  var ov = document.getElementById("navOverlay");
+  if(sb) sb.classList.remove("open");
+  if(ov) ov.classList.remove("show");
+  document.body.classList.remove("nav-open");
+}
+document.addEventListener("click", function(e){
+  // 移动端点击导航项/遮罩后自动收起
+  if(window.innerWidth <= 900 && e.target.closest(".nav-item, #navOverlay")) closeNav();
+});
 function renderNav(){
   var nav = document.getElementById("sideNav"); nav.innerHTML = "";
   var items = [
@@ -714,19 +809,19 @@ function renderCourse(content, eyebrow, title, crumb){
   crumb.textContent = "不再跳 GitHub——书就在这，一章章读，勾进度，要点存进 Obsidian";
   var html = '';
   // 顶部: 书架(所有书横排切换)
-  html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
+  html += '<div class="course-shelf" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
   COURSE_BOOKS.forEach(function(b, bi){
     var act = bi === window._curBookIdx;
     var prog = courseProgress(b);
-    html += '<div onclick="setBook(' + bi + ')" style="cursor:pointer;flex:0 1 220px;background:' + (act ? 'linear-gradient(135deg,#1e5a44,#2a7a55)' : '#f8f5ec') + ';border:' + (act ? '1px solid #1e5a44' : '1px solid #e0dac8') + ';border-radius:14px;padding:12px 14px;color:' + (act ? '#fff' : '#333') + ';box-shadow:var(--shadow)">' +
+    html += '<div class="course-book-card" onclick="setBook(' + bi + ')" style="cursor:pointer;flex:0 1 220px;background:' + (act ? 'linear-gradient(135deg,#1e5a44,#2a7a55)' : '#f8f5ec') + ';border:' + (act ? '1px solid #1e5a44' : '1px solid #e0dac8') + ';border-radius:14px;padding:12px 14px;color:' + (act ? '#fff' : '#333') + ';box-shadow:var(--shadow)">' +
       '<div style="font-size:13px;font-weight:800;margin-bottom:2px">' + (b.icon||"📕") + ' ' + esc(b.title) + '</div>' +
       '<div style="font-size:10.5px;opacity:.8;margin-bottom:6px;line-height:1.4">' + esc(b.desc) + '</div>' +
       '<div style="font-size:10px;opacity:.75">📊 ' + prog.done + '/' + b.chapters.length + ' 章' + (prog.pct===100 ? ' 🎉' : ' · ' + prog.pct + '%') + '</div></div>';
   });
   html += '</div>';
-  html += '<div style="display:flex;gap:14px;align-items:flex-start">';
+  html += '<div class="course-wrap" style="display:flex;gap:14px;align-items:flex-start">';
   // 左: 当前书章目录
-  html += '<div style="flex:0 0 240px">';
+  html += '<div class="course-ch-col" style="flex:0 0 240px">';
   var b = curBook();
   html += '<div style="background:#f8f5ec;border:1px solid #e0dac8;border-radius:14px;padding:14px;margin-bottom:12px">' +
     '<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:2px">' + (b.icon||"📕") + ' ' + esc(b.title) + '</div>' +
@@ -744,7 +839,7 @@ function renderCourse(content, eyebrow, title, crumb){
   html += '</div>';
   html += '</div>';
   // 右: 正文
-  html += '<div style="flex:1;min-width:0"><div id="courseReader" style="background:#fff;border:1px solid #e8e2d2;border-radius:14px;padding:22px;min-height:60vh">' +
+  html += '<div class="course-body" style="flex:1;min-width:0"><div id="courseReader" style="background:#fff;border:1px solid #e8e2d2;border-radius:14px;padding:22px;min-height:60vh">' +
     '<div style="color:#888;font-size:13px;text-align:center;padding-top:100px">👈 点左边章节开始读<br><br>每章读完点 ⬜ → ✅<br><br>底部可「把本章要点存进 Obsidian」</div>' +
     '</div></div>';
   html += '</div>';
