@@ -969,94 +969,196 @@ function vlShowModal(titleHtml, bodyHtml){
   if(modal) modal.style.maxWidth = "840px";
 }
 function vlOpenManual(){
-  var sec = function(icon, name, items){
-    var h = '<div style="margin:18px 0 6px;font-size:15px;font-weight:800;color:#173a30;display:flex;align-items:center;gap:8px"><span style="font-size:18px">' + icon + '</span>' + name + '</div>';
-    h += '<div style="display:flex;flex-direction:column;gap:8px">';
-    items.forEach(function(it){
-      h += '<div style="background:#f8f5ec;border:1px solid #e6dfc9;border-radius:13px;padding:11px 15px;font-size:12.8px;line-height:1.65;color:#4a3d20">' + it + '</div>';
+  var SECTS = [
+    {k:"client", icon:"🎯", name:"客户是谁 · 商机判断", lead:"先搞清真实成交画像和商机前提——不是每个客户都值得花时间。", re:/客户|企业|老板|大中小|需求|画像|商家|商机|前提|验证|筛选|判断|值不值|市场|要不要|规模|心态/},
+    {k:"quote", icon:"💰", name:"怎么报价", lead:"别按 Agent 数/成本报——按给客户创造的价值报,量化成省多少钱。", re:/报价|定价|收费|付费|价格|价值|成本|结果|钱|毛利/},
+    {k:"deliver", icon:"🔧", name:"交付落地", lead:"轻量起步 → 试点验证 → 规模化;人走了系统还能跑。", re:/交付|落地|实施|入企|FDE|试点|流程|SOP|搭建|方案|项目|部署|改造|推进|产品化|阶段/},
+    {k:"pitch", icon:"🎙️", name:"话术 · 获客 · 内容", lead:"客户都是看内容找来的——一个视频=24小时营业的销售。", re:/话术|获客|销售|转化|内容|涨粉|账号|博主|引流|自媒体|私域|粉丝/},
+    {k:"avoid", icon:"⚠️", name:"避坑清单", lead:"这些坑一踩就白干,见客户前扫一遍。", re:/避坑|坑|误区|障碍|反模式|风险|别|错误|注意|教训/},
+    {k:"mind", icon:"🧠", name:"认知 · 趋势(给客户讲)", lead:"让老板听懂 AI 时代的机会和风险,信任先于成交。", re:/认知|趋势|观点|AI时代|学习|思维|未来|判断|红利|职业|时代/}
+  ];
+  var show = function(){
+    window.__mcPrev = "manual";
+    var CATS = ["企业AI落地·接单武器","商业案例·变现样板","AI认知·趋势·观点","自媒体·获客运营"];
+    var picked = [];
+    MC_DATA.forEach(function(c, ci){
+      if(CATS.indexOf(c.cat) === -1) return;
+      c.clusters.forEach(function(cl, cidx){
+        picked.push({ci:ci, cidx:cidx, cat:c.cat, name:cl.name, summary:cl.summary, n:cl.n});
+      });
     });
-    h += '</div>';
-    return h;
+    var sec = {}; SECTS.forEach(function(s){ sec[s.k] = []; });
+    var rest = [];
+    picked.forEach(function(p){
+      var hit = null;
+      for(var i=0;i<SECTS.length;i++){ if(SECTS[i].re.test(p.name)){ hit = SECTS[i]; break; } }
+      if(hit) sec[hit.k].push(p); else rest.push(p);
+    });
+    var h = '<div style="max-width:900px;margin:0 auto">';
+    h += '<div style="font-size:22px;font-weight:900;color:#4a3410;margin-bottom:2px">📕 企业AI落地 · 接单作战手册</div>';
+    h += '<div style="font-size:12px;color:#999;margin-bottom:4px">' + picked.length + ' 组方法簇(从 500+ 条视频共性归类) · 见客户前 10 分钟扫完 · 点卡看完整做法 + 来源视频</div>';
+    h += '<div style="font-size:11px;color:#c9962e;margin-bottom:12px">💡 用法: 先看板块导语 → 点开跟你今天场景最像的卡 → 记下做法与话术再上门</div>';
+    SECTS.forEach(function(s){
+      var items = sec[s.k];
+      if(!items.length) return;
+      h += '<div style="margin:16px 0 8px;display:flex;align-items:center;gap:8px"><span style="font-size:17px">' + s.icon + '</span><span style="font-size:15px;font-weight:800;color:#173a30">' + s.name + '</span><span style="font-size:10.5px;background:#f0ead8;color:#8a6d2a;border-radius:999px;padding:2px 8px">' + items.length + '</span></div>';
+      h += '<div style="font-size:11.5px;color:#b08a3a;margin-bottom:6px;font-style:italic">' + s.lead + '</div>';
+      items.forEach(function(p){
+        var multi = p.n >= 3;
+        h += '<div class="mc-cluster" data-ci="' + p.ci + '" data-cidx="' + p.cidx + '" style="background:#fffdf5;border:1px solid ' + (multi ? "#d9b45a" : "#e6dfc9") + ';border-radius:13px;padding:10px 14px;margin-bottom:7px;cursor:pointer">';
+        h += '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span style="font-size:13px;font-weight:800;color:#4a3410">' + esc(p.name) + '</span>' + (multi ? '<span style="font-size:10px;background:#c9962e;color:#fff;border-radius:999px;padding:1px 7px">' + p.n + ' 条共性</span>' : '') + '</div>';
+        h += '<div style="font-size:12px;color:#7a6a45;line-height:1.6;margin-top:3px">' + esc(p.summary) + '</div>';
+        h += '</div>';
+      });
+    });
+    if(rest.length){
+      h += '<div style="margin:16px 0 8px"><span style="font-size:15px;font-weight:800;color:#173a30">📦 更多弹药</span></div>';
+      rest.forEach(function(p){
+        h += '<div class="mc-cluster" data-ci="' + p.ci + '" data-cidx="' + p.cidx + '" style="background:#fffdf5;border:1px solid #e6dfc9;border-radius:13px;padding:10px 14px;margin-bottom:7px;cursor:pointer"><span style="font-size:13px;font-weight:800;color:#4a3410">' + esc(p.name) + '</span><div style="font-size:12px;color:#7a6a45;line-height:1.6;margin-top:3px">' + esc(p.summary) + '</div></div>';
+      });
+    }
+    h += '<div style="margin-top:16px;display:flex;gap:10px">';
+    h += '<button onclick="vlSaveManual()" style="background:var(--lime);color:#173a30;border:0;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer">📌 沉淀进 Obsidian</button>';
+    h += '<button onclick="vlOpenInsights()" style="background:transparent;border:1px solid #dcded7;padding:10px 16px;border-radius:12px;font-size:13px;cursor:pointer">🧭 全部方法论库</button>';
+    h += '<button onclick="closeM()" style="background:transparent;border:1px solid #dcded7;padding:10px 18px;border-radius:12px;font-size:13px;cursor:pointer">关闭</button>';
+    h += '</div></div>';
+    document.getElementById("mTitle").textContent = "📕 接单作战手册";
+    document.getElementById("mSub").innerHTML = "";
+    var mask = document.getElementById("mask");
+    mask.classList.add("show");
+    var mb = document.getElementById("mBody");
+    if(mb) mb.innerHTML = h;
+    var modal = document.querySelector("#mask .modal");
+    if(modal) modal.style.maxWidth = "920px";
   };
-  var h = '<div style="max-width:820px;margin:0 auto">';
-  h += '<div style="font-size:22px;font-weight:900;color:#4a3410;margin-bottom:4px">📕 企业AI落地 · 接单作战手册</div>';
-  h += '<div style="font-size:12px;color:#999;margin-bottom:16px">来源: 王昕ai实战笔记会话视频 · 口播转写提炼 · 见客户前10分钟扫完</div>';
-  h += sec("🎯", "客户是谁(真实成交画像)", [
-    "<b>规模</b>: 300-800人制造/贸易企业(500人最典型), 要啥有啥但不顶尖",
-    "<b>现状</b>: 还在用Word/Excel/微信传文件, 大量手工流程",
-    "<b>心态</b>: 老板知道AI重要但不知道找谁(窗口期就这一两年)",
-    "<b>定价锚点</b>: zionisreal 制造业改造一单20万(2人1周), 平均10-15万; 小智FDE入企20万/单"
-  ]);
-  h += sec("💰", "怎么报价(别按Agent数报!)", [
-    "<b>大忌</b>: 采购问「一个Agent多少钱」→ 敢按数量报价=卖工具不是做转型",
-    "<b>正确做法</b>: ①选5个业务流做Benchmark(人员→SOP→对比AI工作流→算出产出率提升) ②量化成钱: 一年省100万/月省8.3万 ③合同按结果导向——差异化, 大厂还在卖软件"
-  ]);
-  h += sec("🧭", "交付SOP(旭东AI 5步轻量版)", [
-    "① 业务诊断: 深入流程挖高价值场景/真痛点(不是客户嘴上说的)",
-    "② Demo验证: 快速搭最小MVP, 不用完美先跑通",
-    "③ 落地实施: 接真实业务数据, 打通系统链路",
-    "④ 运行优化: 观测效果调流程",
-    "⑤ 培训迭代: 培训内部负责人, 沉淀文档 → 避免交付即停滞",
-    "<b>核心理念</b>: 轻量起步 → 试点验证再规模化 → 人走了系统还能跑"
-  ]);
-  h += sec("🔍", "谈单必查(清华鑫哥B端七条)", [
-    "① <b>数据在哪?</b> 做客服先问聊天记录/订单/库存有没有API; 数据靠人肉=玩具",
-    "② <b>翻译成「省一个人」</b>: 老板只算岗位工资能不能省; 讲「这活不用人盯了」比讲技术快",
-    "③ 知识库=3分AI+7分梳理脏文档; 客户愿为这7分付钱(脏活才有壁垒)",
-    "④ 留兜底: AI做的活加人工确认按钮",
-    "⑤ 做B端也要发内容: 客户都是看抖音/公众号找来的; 一个视频=24小时营业的销售"
-  ]);
-  h += sec("⚠️", "避坑清单", [
-    "<b>客户花30万没人用</b> → 没有「真实+重复+有数据」的业务前提(董俊豪)",
-    "<b>按Agent数报价</b> → 卖工具不是做转型(制造业落地官)",
-    "<b>企业没数据就上AI</b> → AI前提是数据, 先补数字化课(旭东14)",
-    "<b>以为AI=自动上链接</b> → 电商自动化早靠RPA, AI只是增强(时来)",
-    "<b>FDE是终身职业?</b> → 只有3-5年红利期, 当跳板, 交付要产品化(曲率出逃)"
-  ]);
-  h += sec("🎙️", "话术弹药", [
-    "「AI不会凭空给你更好的业务能力, 只会指数放大你沉淀的业务资产」(DD讲AI)",
-    "「未来组织就做两件事: 运营的自动化 + 战略决策的高质量化」(曾鸣)",
-    "「数据只是第一步, 难的是把人的经验说清楚」(董俊豪)",
-    "「没有数字化就没有全面的AI智能化」(旭东AI)",
-    "「工具是0, 业务才是1, 没1全白搭」(旭东38)"
-  ]);
-  h += '<div style="margin-top:18px;display:flex;gap:10px">';
-  h += '<button onclick="vlSaveManual()" style="background:var(--lime);color:#173a30;border:0;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer">📌 沉淀进 Obsidian</button>';
-  h += '<button onclick="closeM()" style="background:transparent;border:1px solid #dcded7;padding:10px 18px;border-radius:12px;font-size:13px;cursor:pointer">关闭</button>';
-  h += '</div></div>';
-  vlShowModal("接单作战手册", h);
+  if(MC_DATA){ show(); return; }
+  fetch("method_clusters.json").then(function(r){ return r.json(); })
+  .then(function(d){ MC_DATA = d; show(); })
+  .catch(function(e){ alert("加载失败: " + e); });
 }
 function vlSaveManual(){
-  var md = "# 企业AI落地 · 接单作战手册\n\n> 来源: 王昕ai实战笔记 会话视频 2026-09 整理\n\n";
-  md += "## 客户画像\n- 300-800人制造/贸易, 要啥有啥但不顶尖\n- 用Word/Excel/微信传文件, 手工流程多\n- 老板知道AI重要但不知找谁\n- 定价锚点: 20万/单(2人1周), 平均10-15万\n\n## 报价\n- 大忌: 按Agent数报=卖工具\n- 正确: Benchmark 5业务流→量化「一年省100万」→结果导向合同\n\n## 交付SOP(5步)\n诊断→demo→实施→优化→培训迭代(避免交付即停滞)\n\n## 谈单必查\n数据在哪?/翻译成省一个人/脏活壁垒/留兜底/内容获客\n\n## 避坑\n30万没人用=没业务前提; 没数据先补数字化; AI只是RPA增强\n\n## 话术\nAI放大业务资产/组织两件事/数据vs经验/工具0业务1\n";
+  if(!MC_DATA){ alert("手册还没加载完,稍等再点"); return; }
+  var CATS = ["企业AI落地·接单武器","商业案例·变现样板","AI认知·趋势·观点","自媒体·获客运营"];
+  var md = "# 企业AI落地 · 接单作战手册\\n\\n> 来源: 王昕ai实战笔记 500+ 条视频共性归类(2026-09-08 自动生成)\\n\\n";
+  var n = 0;
+  MC_DATA.forEach(function(c){
+    if(CATS.indexOf(c.cat) === -1) return;
+    md += "## " + c.cat + "\\n";
+    c.clusters.forEach(function(cl){
+      if(!cl.sources || !cl.sources.length) return;
+      n++;
+      md += "### " + cl.name + "\\n";
+      md += "- " + (cl.summary || "") + "\\n";
+      (cl.points || []).forEach(function(p){ md += "  - " + p + "\\n"; });
+      md += "  来源(" + cl.n + "): " + cl.sources.map(function(s){ return (s.author || "") + "《" + (s.title || "").slice(0,30) + "》"; }).join("、") + "\\n\\n";
+    });
+  });
+  md = md.replace(/## 归档/g, "");
   fetch("/api/save_doc", {method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify({title: "接单作战手册", content: md, folder: "复盘"})})
   .then(function(r){ return r.json(); })
-  .then(function(d){ alert(d.ok ? "✅ 已沉淀: " + (d.path||"") : "❌ " + (d.error||"失败")); })
+  .then(function(d){ alert(d.ok ? "✅ 已沉淀 " + n + " 簇: " + (d.path||"") : "❌ " + (d.error||"失败")); })
   .catch(function(e){ alert("❌ 保存失败: " + e); });
 }
+var MC_DATA = null, MC_CAT = 0;
 function vlOpenInsights(){
-  var all = [];
-  VL_DATA.cats.forEach(function(c){
-    c.items.forEach(function(i){ if(i.insight && i.insight.length > 30) all.push(i); });
-  });
-  if(!all.length){ alert("还没有提炼好的洞察"); return; }
-  var h = '<div style="max-width:820px;margin:0 auto">';
-  h += '<div style="font-size:22px;font-weight:900;color:#173a30;margin-bottom:4px">💡 洞察精选</div>';
-  h += '<div style="font-size:12px;color:#999;margin-bottom:14px">' + all.length + ' 条已提炼方法论(口播转写 → 大白话要点), 点开即读</div>';
-  all.forEach(function(it){
-    var title = (it.desc || it.title || "").replace(/#\S+/g, "").replace(/\s+/g, " ").trim();
-    if(title.length > 50) title = title.slice(0, 50) + "…";
-    var insight = it.insight.replace(/\n/g, "<br>");
-    h += '<div style="background:#fff;border:1px solid #e8e4d8;border-radius:14px;padding:13px 16px;margin-bottom:10px;cursor:pointer" onclick="vlOpen(\'' + it.id + '\')">';
-    h += '<div style="font-size:11px;color:#145c42;font-weight:700;margin-bottom:4px">' + esc(it.a) + ' · ' + title + '</div>';
-    h += '<div style="font-size:12.5px;color:#444;line-height:1.7;max-height:76px;overflow:hidden">' + insight + '</div>';
-    h += '<div style="font-size:11px;color:#145c42;font-weight:700;margin-top:5px">查看全文 →</div>';
+  var show = function(){
+    var h = '<div style="max-width:900px;margin:0 auto">';
+    h += '<div style="font-size:22px;font-weight:900;color:#173a30;margin-bottom:2px">🧭 方法论库(相近经验归簇)</div>';
+    h += '<div style="font-size:12px;color:#999;margin-bottom:12px">' + MC_DATA.length + ' 个类目 · ' + MC_DATA.reduce(function(a,x){return a+x.clusters.length;},0) + ' 组方法簇 —— 每组都是从多条视频提炼的真方法(非单条复制), 点开看做法 + 来源视频</div>';
+    // 类目 tabs
+    h += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">';
+    MC_DATA.forEach(function(c, ci){
+      var act = ci === MC_CAT;
+      h += '<button onclick="mcSetCat(' + ci + ')" style="border:0;cursor:pointer;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;background:' + (act ? "#163c31" : "#f0f3ef") + ';color:' + (act ? "#fff" : "#444") + '">' + esc(c.icon) + ' ' + esc(c.cat) + ' <span style="opacity:.6">' + c.clusters.length + '</span></button>';
+    });
+    h += '</div>';
+    // 簇列表
+    var cur = MC_DATA[MC_CAT];
+    cur.clusters.forEach(function(cl){
+      var multi = cl.n >= 3;
+      h += '<div class="mc-cluster" data-ci="' + MC_CAT + '" data-cidx="' + cur.clusters.indexOf(cl) + '" style="background:#fff;border:1px solid ' + (multi ? "#bfd9d0" : "#e8e4d8") + ';border-radius:15px;padding:13px 16px;margin-bottom:10px;cursor:pointer">';
+      h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+      h += '<span style="font-size:13.5px;font-weight:800;color:' + (multi ? "#145c42" : "#3c2a66") + '">' + esc(cl.name) + '</span>';
+      if(multi){ h += '<span style="font-size:10px;background:#145c42;color:#fff;border-radius:999px;padding:2px 8px;font-weight:700">' + cl.n + ' 条共性</span>'; }
+      else { h += '<span style="font-size:10px;background:#eef;color:#556;border-radius:999px;padding:2px 8px">单条经验</span>'; }
+      h += '</div>';
+      h += '<div style="font-size:12px;color:#666;line-height:1.65;margin-top:5px">' + esc(cl.summary) + '</div>';
+      h += '<div style="font-size:11px;color:#145c42;font-weight:700;margin-top:6px">' + (multi ? "点击看完整方法 + 来源视频 →" : "点击看这条经验详情 →") + '</div>';
+      h += '</div>';
+    });
+    h += '<button onclick="closeM()" style="background:transparent;border:1px solid #dcded7;padding:10px 18px;border-radius:12px;font-size:13px;cursor:pointer;margin-top:6px">关闭</button></div>';
+    document.getElementById("mTitle").textContent = "🧭 方法论库";
+    document.getElementById("mSub").innerHTML = "";
+    var mask = document.getElementById("mask");
+    mask.classList.add("show");
+    var mb = document.getElementById("mBody");
+    if(mb) mb.innerHTML = h;
+    var modal = document.querySelector("#mask .modal");
+    if(modal) modal.style.maxWidth = "920px";
+  };
+  if(MC_DATA){ show(); return; }
+  fetch("method_clusters.json").then(function(r){ return r.json(); })
+  .then(function(d){ MC_DATA = d; show(); })
+  .catch(function(e){ alert("加载失败: " + e); });
+}
+function mcSetCat(ci){ MC_CAT = ci; vlOpenInsights(); }
+function mcDetail(ci, cidx){
+  if(!MC_DATA || !MC_DATA[ci]) return;
+  var cl = MC_DATA[ci].clusters[cidx];
+  if(!cl) return;
+  var multi = cl.n >= 3;
+  var h = '<div style="max-width:820px;margin:0 auto;padding:4px 2px">';
+  h += '<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:' + (multi ? "#145c42" : "#8a7aa8") + ';margin-bottom:6px">' + esc(MC_DATA[ci].cat) + ' · ' + (multi ? "⚡ " + cl.n + " 条共性提炼" : "单条经验") + '</div>';
+  h += '<div style="font-size:21px;font-weight:900;color:#17231f;line-height:1.35;margin-bottom:10px">' + esc(cl.name) + '</div>';
+  // summary 卡
+  h += '<div style="background:' + (multi ? "linear-gradient(135deg,#163c31,#1e5a44)" : "#f7f4fd") + ';border-radius:16px;padding:16px 18px;color:' + (multi ? "#fff" : "#333") + ';font-size:13.5px;line-height:1.75;margin-bottom:14px">' + esc(cl.summary) + '</div>';
+  // points
+  if(cl.points && cl.points.length){
+    h += '<div style="font-size:12px;font-weight:800;color:#333;margin-bottom:8px">📋 具体做法</div>';
+    h += '<div style="background:#f8f5ec;border:1px solid #e0dac8;border-radius:14px;padding:13px 16px;margin-bottom:14px">';
+    cl.points.forEach(function(p){
+      h += '<div style="font-size:12.8px;color:#4a3d20;line-height:1.7;margin-bottom:6px;padding-left:14px;position:relative">';
+      h += '<span style="position:absolute;left:0;top:0;color:#c9962e;font-weight:800">▸</span>' + esc(p) + '</div>';
+    });
+    h += '</div>';
+  }
+  // 来源视频
+  h += '<div style="font-size:12px;font-weight:800;color:#333;margin-bottom:8px">📺 来源素材(' + cl.n + '条) —— 点开看原视频提炼</div>';
+  cl.sources.forEach(function(s, si){
+    h += '<div class="mc-src" data-id="' + esc(s.id) + '" style="background:#fff;border:1px solid #e6e2d8;border-radius:11px;padding:9px 12px;margin-bottom:6px;cursor:pointer">';
+    h += '<div style="font-size:11px;color:#145c42;font-weight:700">' + esc(s.author || "未知") + '</div>';
+    h += '<div style="font-size:12px;color:#555;line-height:1.5;margin-top:2px">' + esc((s.title || "").slice(0, 80)) + '</div>';
+    h += '<div style="font-size:10.5px;color:#145c42;margin-top:3px">点击查看 →</div>';
     h += '</div>';
   });
-  h += '<button onclick="closeM()" style="background:transparent;border:1px solid #dcded7;padding:10px 18px;border-radius:12px;font-size:13px;cursor:pointer;margin-top:6px">关闭</button></div>';
-  vlShowModal("洞察精选 · 全网方法论", h);
+  h += '<button onclick="vlMethodTab(\'' + MC_DATA[ci].cat + '\')" style="display:none"></button>';
+  h += '<div style="margin-top:12px"><button onclick="(window.__mcPrev===\'manual\'?vlOpenManual():vlOpenInsights())" style="background:transparent;border:1px solid #dcded7;padding:9px 16px;border-radius:12px;font-size:12.5px;cursor:pointer">← 返回上一级</button></div>';
+  h += '</div>';
+  vlShowModal(MC_DATA[ci].cat + " · 方法", h);
 }
+/* 委托: mc-cluster 点击 → mcDetail; mc-src 点击 → vlOpen */
+document.addEventListener("click", function(ev){
+  var t = ev.target;
+  while(t && t !== document){
+    if(t.classList){
+      if(t.classList.contains("mc-cluster")){
+        var ci = t.getAttribute("data-ci");
+        var cidx = t.getAttribute("data-cidx");
+        if(ci !== null && cidx !== null && typeof mcDetail === "function"){
+          mcDetail(parseInt(ci, 10), parseInt(cidx, 10));
+        }
+        return;
+      }
+      if(t.classList.contains("mc-src")){
+        var id = t.getAttribute("data-id");
+        if(id && typeof vlOpen === "function"){ vlOpen(id); }
+        return;
+      }
+    }
+    t = t.parentElement;
+  }
+});
 var MG = null, MG_TAB = "map";
 function vlOpenDoc18(){
   openFullReport("/obs/成长系统/18_视频方法论沉淀_v1.md", "视频方法论沉淀 18", "513条抖音提炼 · 9大主题方法论总纲 + 明细", "q18doc");
@@ -1110,7 +1212,7 @@ function vlMethodHtml(){
     h += '</div></div>';
   } else {
     cur.blocks.forEach(function(b, bi){
-      h += '<div onclick="mgDetail(\'' + esc(s.id) + '\',' + bi + ')" style="background:#fff;border:1px solid #e6e0f0;border-radius:13px;padding:11px 14px;margin-bottom:8px;cursor:pointer;transition:transform .1s,box-shadow .1s" onmouseover="this.style.transform=\'translateY(-1px)\';this.style.boxShadow=\'0 4px 12px rgba(90,60,160,.08)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">';
+      h += '<div class="mg-card" data-sid="' + esc(cur.id) + '" data-bi="' + bi + '" style="background:#fff;border:1px solid #e6e0f0;border-radius:13px;padding:11px 14px;margin-bottom:8px;cursor:pointer">';
       h += '<div style="font-size:13px;font-weight:800;color:#3c2a66">' + esc(b.t) + '</div>';
       h += '<div style="font-size:12.3px;color:#4a4a5a;line-height:1.7;margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">' + esc(b.b) + '</div>';
       h += '<div style="font-size:10.5px;color:#9a8ab8;margin-top:6px">' + (b.src ? "出处: " + esc(b.src) : "") + ' · 点击展开</div>';
@@ -1124,6 +1226,21 @@ function vlMethodHtml(){
   return h;
 }
 function vlMethodTab(id){ MG_TAB = id; var mb = document.getElementById("mBody"); if(mb) mb.innerHTML = vlMethodHtml(); }
+/* 事件委托: .mg-card 点击 → mgDetail(避免内联 onclick 引号地狱/卡死) */
+document.addEventListener("click", function(ev){
+  var t = ev.target;
+  while(t && t !== document){
+    if(t.classList && t.classList.contains("mg-card")){
+      var sid = t.getAttribute("data-sid");
+      var bi = t.getAttribute("data-bi");
+      if(sid && bi !== null && typeof mgDetail === "function"){
+        mgDetail(sid, parseInt(bi, 10));
+      }
+      return;
+    }
+    t = t.parentElement;
+  }
+});
 function mgDetail(sid, bi){
   if(!MG) return;
   var sec = null;
