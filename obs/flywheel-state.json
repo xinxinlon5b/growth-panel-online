@@ -1,0 +1,16 @@
+{
+  "lastRun": "2026-09-03T09:30:00+08:00",
+  "mode": "manual-first-run",
+  "note": "飞轮首跑（decision-card-miner 路径修正后实测）：skill/cron 原指向不存在的 ~/methodology/，已修正为 Obsidian 真实路径。本次手动跑通全链路验证 cron 9/7 可正常执行。",
+  "signalsCollected": 15,
+  "signalsSources": {
+    "github": 15
+  },
+  "candidatesWritten": 2,
+  "candidates": [
+    "cards/candidates/2026-09-03-ai-architect.md",
+    "cards/candidates/2026-09-03-enterprise-agent-security.md"
+  ],
+  "pendingHumanReview": 2,
+  "nextScheduledRun": "2026-09-07T03:00:00+08:00"
+}

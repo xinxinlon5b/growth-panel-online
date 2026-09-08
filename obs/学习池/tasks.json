@@ -1,0 +1,46 @@
+[
+  {
+    "mode": "blogger",
+    "value": "https://www.douyin.com/user/MS4wLjABAAAA8823HyxJMan39uAmpKwfmZWoux1Q2qHwtbilHivlDtA",
+    "time": "2026-09-03 18:58",
+    "status": "failed",
+    "output": "{\n  \"ok\": false,\n  \"error\": \"搜索页没定位到该博主主页。你把博主主页链接发我即可（抖音网页版打开他人主页，复制地址栏），或直接给博主名让我再试\",\n  \"hint\": \"主页链接形如 https://www.douyin.com/user/xxx\"\n}\n/Users/tkdesign/.hermes/venvs/vkbot/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020\n  warnings.warn(\n"
+  },
+  {
+    "mode": "keyword",
+    "value": "FDE",
+    "time": "2026-09-03 18:59",
+    "status": "done",
+    "output": "{\n  \"ok\": true,\n  \"keyword\": \"FDE\",\n  \"projects\": [\n    \"xdash/FDE-the-Guidance-Book-of-Forward-Deployed-Engineer\",\n    \"pierpaolo28/Awesome-FDE-Roadmap\",\n    \"feravolt/FDE.AI-docs\",\n    \"calmrocks/ai-engineer-notebooks\",\n    \"guocong-bincai/ai-interview-guide\"\n  ],\n  \"written\": 5,\n  \"candidates\": [\n    \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/候选池/[学习] xdash_FDE-the-Guidance-Book-of-Forward-Deployed-Engineer.md\",\n    \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/候选池/[学习] pierpaolo28_Awesome-FDE-Roadmap.md\",\n    \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/候选池/[学习] feravolt_FDE.AI-docs.md\",\n    \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/候选池/[学习] calmrocks_ai-engineer-notebooks.md\",\n    \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/候选池/[学习] guocong-bincai_ai-interview-guide.md\"\n  ],\n  \"summary\": \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/学习池/学习总结_FDE.md\"\n}\n"
+  },
+  {
+    "mode": "keyword",
+    "value": "AI agent 生产化落地实践",
+    "time": "2026-09-03 22:16",
+    "status": "error",
+    "output": ""
+  },
+  {
+    "mode": "link",
+    "value": "https://v.douyin.com/_6rkgKtICrI/",
+    "time": "2026-09-07 08:31",
+    "status": "failed",
+    "output": "  🌐 检测到本机代理 127.0.0.1:7892, GitHub 走代理\n{\n  \"ok\": false,\n  \"error\": \"链接里没有 aweme_id\",\n  \"url\": \"https://v.douyin.com/_6rkgKtICrI/\"\n}\n"
+  },
+  {
+    "mode": "keyword",
+    "value": "RAG 检索增强生成 最佳实践",
+    "time": "2026-09-07 08:45",
+    "status": "done",
+    "output": "  🌐 检测到本机代理 127.0.0.1:7892, GitHub 走代理\n  ⏭️ README 拉取失败(网络?), 跳过: vwetjj/rag-boilerplate\n{\n  \"ok\": true,\n  \"keyword\": \"RAG 检索增强生成 最佳实践\",\n  \"projects\": [\n    \"chaoql/rag-best-practices\",\n    \"ethan-funny/awesome-rag\",\n    \"Ranc-AttacK/AdameusCodeHelperAndRance\",\n    \"alexlifexyz/lumos-ai-platform\",\n    \"vwetjj/rag-boilerplate\"\n  ],\n  \"written\": 4,\n  \"candidates\": [\n    \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/候选池/[学习] chaoql_rag-best-practices.md\",\n    \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/候选池/[学习] ethan-funny_awesome-rag.md\",\n    \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/候选池/[学习] Ranc-AttacK_AdameusCodeHelperAndRance.md\",\n    \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/候选池/[学习] alexlifexyz_lumos-ai-platform.md\"\n  ],\n  \"summary\": \"/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/学习池/学习总结_RAG 检索增强生成 最佳实践.md\"\n}\n",
+    "display": "✅ 学到 4 条"
+  },
+  {
+    "mode": "link",
+    "value": "https://v.douyin.com/_6rkgKtICrI/",
+    "time": "2026-09-07 19:57",
+    "status": "failed",
+    "output": "  🌐 检测到本机代理 127.0.0.1:7892, GitHub 走代理\n{\n  \"ok\": false,\n  \"error\": \"抖音提取失败(DrissionPage+CDP 都不可用): \\nBrowser connect failed, check whether the port 9224 is a browser and \\\"--remote- | Handshake status 403 Forbidden -+-+- {'content-length': '239', 'content-type': '\",\n  \"url\": \"https://v.douyin.com/_6rkgKtICrI/\"\n}\n/Users/tkdesign/.hermes/venvs/vkbot/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020\n  warnings.warn(\n",
+    "display": "❌ 没学成：抖音提取失败(DrissionPage+CDP 都不可用): \\nBrowser connect failed, check whether the port "
+  }
+]
