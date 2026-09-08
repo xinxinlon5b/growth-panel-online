@@ -321,7 +321,7 @@ mark.kterm:focus-visible{outline:2px solid var(--green);outline-offset:1px}
     function snapLoad(){ try{ SNAP = JSON.parse(localStorage.getItem("grow_static_api") || "{}"); }catch(e){ SNAP = {}; } }
     function snapSave(){ try{ localStorage.setItem("grow_static_api", JSON.stringify(SNAP)); }catch(e){} }
     snapLoad();
-    var REAL = {"/api/status":"static_api_status.json","/api/projects":"static_api_projects.json","/api/audit_reports":"static_api_audit.json"};
+    var REAL = {"/api/status":"static_api_status.json","/api/projects":"static_api_projects.json","/api/audit_reports":"static_api_audit_reports.json"};
     var origFetch = window.fetch;
     window.fetch = function(url, opts){
       var u = String(url);
@@ -2330,6 +2330,25 @@ html += '<div class="home-quick">';
     '<div class="stat-card"><div class="num" id="stCards2">' + (function(){var d=0;for(var k in SUBS){d+=SUBS[k].length;}return d;})() + '</div><div class="lbl">方法论子目录</div></div>' +
     '</div><div id="quickDocs" style="margin-top:4px"></div></div>';
   html += '</div>';
+  /* —— 🎯 高频直达 · 点开即用(不藏在目录里) —— */
+  html += '<div style="display:flex;align-items:center;gap:8px;margin:16px 0 4px">' +
+    '<span style="font-size:15px;font-weight:900;color:var(--ink)">🎯 点开即用</span>' +
+    '<span style="font-size:11px;color:var(--muted)">常看的经验直接进，不用翻目录</span></div>';
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px">';
+  var QUICKC = [
+    {ico:"🧭", t:"学习方向", d:"6 条路 · 含我的判断 + SOP · 可排序", fn:"vlOpenPaths()", bg:"linear-gradient(135deg,#163c31,#2a6b4f)", fg:"#fff"},
+    {ico:"📚", t:"别人怎么做", d:"500+ 视频经验归簇 · 111 组方法", fn:"vlOpenInsights()", bg:"linear-gradient(135deg,#3c2a66,#6a4f9e)", fg:"#fff"},
+    {ico:"📕", t:"方法论总纲", d:"接单 → 交付 → 避坑 全流程", fn:"vlOpenMethod()", bg:"linear-gradient(135deg,#8a5a17,#c9962e)", fg:"#fff"},
+    {ico:"⚡", t:"接单作战手册", d:"32 组方法簇 · 按实战场景", fn:"vlOpenManual()", bg:"linear-gradient(135deg,#145c42,#3f8f6a)", fg:"#fff"}
+  ];
+  QUICKC.forEach(function(q){
+    html += '<div class="quickbig" onclick="' + q.fn + '" style="border-radius:16px;padding:14px 16px;background:' + q.bg + ';color:' + q.fg + ';cursor:pointer;transition:.18s;box-shadow:0 3px 10px rgba(25,45,37,.1)">' +
+      '<div style="font-size:20px;margin-bottom:6px">' + q.ico + '</div>' +
+      '<div style="font-size:14px;font-weight:900;margin-bottom:2px">' + q.t + '</div>' +
+      '<div style="font-size:11px;opacity:.85;line-height:1.5">' + q.d + '</div>' +
+      '<div style="font-size:10px;margin-top:6px;opacity:.75">点击打开 →</div></div>';
+  });
+  html += '</div>';
   html += '<div class="dir-grid">';
   DIRS.forEach(function(d){
     html += '<div class="dir-card" onclick="view={mode:\'dir\',dir:\'' + d.id + '\',sub:null};renderAll()">' +
@@ -2354,7 +2373,7 @@ function quickDocs(){
     {n:"🏆 11 案例库", d:"案例→功能组合", p:"obs/成长系统/11_真实案例库_案例与组合理由_v1.md"},
     {n:"📖 12 术语词典", d:"专业词大白话", p:"obs/成长系统/12_关键术语词典_v1.md"},
     {n:"📚 别人怎么做", d:"CAF/NIST/Agent/RAG 方法论卡", jump:"c4"},
-    {n:"🎯 学习方向", d:"助手整理的 6 条路 · 可排序", fn:"vlOpenPaths"}
+    {n:"🎯 学习方向", d:"助手整理的 6 条路 · 可排序", fn:"vlOpenPaths()"}
   ];
   var h = '<div style="margin:4px 0 0;display:flex;gap:6px;flex-wrap:wrap">';
   docs.forEach(function(d, i){
