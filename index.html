@@ -274,6 +274,12 @@ mark.kterm:focus-visible{outline:2px solid var(--green);outline-offset:1px}
 .comb-pick .cp-x{margin-left:auto;background:none;border:none;color:#c0392b;cursor:pointer;font-size:15px;line-height:1}
 .comb-actions{display:flex;gap:8px;margin-top:12px}
 .comb-actions .ask-btn{flex:1;padding:10px;font-size:13px}
+/* 手动排序按钮(卡片右上 hover 显现) */
+.sort-btns{display:inline-flex;gap:2px;opacity:.28;transition:opacity .15s}
+.mc-cluster:hover .sort-btns,.mg-card:hover .sort-btns,.dir-card:hover .sort-btns,.path-card:hover .sort-btns{opacity:.9}
+.sort-btn{border:1px solid #cfd8d0;background:#fff;color:#4a6a55;border-radius:7px;width:22px;height:22px;line-height:1;font-size:11px;cursor:pointer;padding:0;transition:.12s}
+.sort-btn:hover{background:var(--green);color:#fff;border-color:var(--green);transform:translateY(-1px)}
+.sort-btn:active{transform:scale(.94)}
 </style>
 </head>
 <body>
@@ -306,22 +312,30 @@ mark.kterm:focus-visible{outline:2px solid var(--green);outline-offset:1px}
 </div></div>
 
 <script>
-/* ===== 静态镜像模式: /api/* 无后端, 统一拦截 ===== */
+/* 静态拦截器: 在线版(无后端)时 /api/* 读快照, 写操作给降级提示 */
 (function(){
-  var origFetch = window.fetch;
-  window.fetch = function(url, opts){
-    if(typeof url === "string" && (url.indexOf("/api/audit_reports") === 0 || url.indexOf("/api/projects") === 0 || url.indexOf("/api/status") === 0)){
-      var f = url.indexOf("audit_reports") >= 0 ? "static_api_audit_reports.json" : (url.indexOf("projects") >= 0 ? "static_api_projects.json" : "static_api_status.json");
-      return origFetch(f).then(function(r){ return r.json().then(function(j){ return new Response(JSON.stringify(j), {status:200, headers:{"Content-Type":"application/json"}}); }); });
-    }
-    if(typeof url === "string" && url.indexOf("/api/") === 0){
-      return Promise.resolve(new Response(JSON.stringify({ok:false, error:"在线镜像(静态版)不支持这个操作——收录/审核/保存/问agent 请回本地完整版 http://127.0.0.1:8895"}), {status:200, headers:{"Content-Type":"application/json"}}));
-    }
-    return origFetch.apply(this, arguments);
-  };
-  window.__STATIC__ = true;
+  try{
+    if(window.__STATIC__) return;
+    window.__STATIC__ = true;
+    var SNAP = {};
+    function snapLoad(){ try{ SNAP = JSON.parse(localStorage.getItem("grow_static_api") || "{}"); }catch(e){ SNAP = {}; } }
+    function snapSave(){ try{ localStorage.setItem("grow_static_api", JSON.stringify(SNAP)); }catch(e){} }
+    snapLoad();
+    var REAL = {"/api/status":"static_api_status.json","/api/projects":"static_api_projects.json","/api/audit_reports":"static_api_audit.json"};
+    var origFetch = window.fetch;
+    window.fetch = function(url, opts){
+      var u = String(url);
+      if(u.indexOf("/api/") === 0){
+        if(REAL[u] && !(opts && opts.method && opts.method !== "GET")){
+          return origFetch(REAL[u]).then(function(r){ return r.json().then(function(j){ return {ok:true, json:function(){ return Promise.resolve(j); }, text:function(){ return Promise.resolve(JSON.stringify(j)); }}; }); });
+        }
+        return Promise.resolve({ok:false, json:function(){ return Promise.resolve({ok:false, error:"在线演示模式不支持写操作，请回本地 8895"}); }, text:function(){ return Promise.resolve("{}"); }});
+      }
+      return origFetch.apply(this, arguments);
+    };
+  }catch(e){}
 })();
-
+</script>
 /* ================= 数据（与 v1.0 一致）================= */
 var DIRS = [
   {id:"f",name:"框架做对",desc:"企业AI落地需要哪些框架/方法/功能点，每个都有「是什么 / 什么时候需要 / 怎么做 / 不该怎么做」，从第一版就把架构做对。",ico:"框"},
@@ -815,6 +829,62 @@ function inlineMd(t){
 /* ================= 🎬 视频弹药库 (动态条数) ================= */
 var VL_DATA = null;
 function vtotal(){ return (VL_DATA && VL_DATA.meta && VL_DATA.meta.total) ? VL_DATA.meta.total : ""; }           // fetch 后缓存
+/* ============ 手动排序(经验置顶/上移/下移, localStorage 持久化) ============ */
+var SORT_KEY = "growth_sort_order_v1";   // {scope: [id...]}
+function sortStore(){ try{ return JSON.parse(localStorage.getItem(SORT_KEY) || "{}"); }catch(e){ return {}; } }
+function sortOrderGet(scope){ var o = sortStore(); return (o[scope] && o[scope].length) ? o[scope] : null; }
+function sortOrderSave(scope, arr){
+  var o = sortStore(); o[scope] = arr;
+  try{ localStorage.setItem(SORT_KEY, JSON.stringify(o)); }catch(e){}
+}
+/* 用用户顺序重排 arr; idFn 取每个元素稳定 id。首次自动初始化=默认顺序 */
+function sortApply(scope, arr, idFn){
+  if(!arr || !arr.length) return arr;
+  var defIds = arr.map(function(x){ return idFn(x); });
+  var order = sortOrderGet(scope);
+  if(!order){
+    order = defIds.slice();
+    sortOrderSave(scope, order);
+  }
+  var byId = {}; arr.forEach(function(x){ byId[idFn(x)] = x; });
+  var out = [], seen = {};
+  order.forEach(function(id){ if(byId[id] && !seen[id]){ out.push(byId[id]); seen[id] = 1; } });
+  arr.forEach(function(x){ var id = idFn(x); if(!seen[id]){ out.push(x); seen[id] = 1; } });
+  return out;
+}
+function sortMove(scope, id, op){
+  var order = sortOrderGet(scope); if(!order) return;
+  var i = order.indexOf(id); if(i < 0) return;
+  if(op === "top"){ order.splice(i, 1); order.unshift(id); }
+  else if(op === "up"){ if(i > 0){ order.splice(i, 1); order.splice(i - 1, 0, id); } }
+  else if(op === "down"){ if(i < order.length - 1){ order.splice(i, 1); order.splice(i + 1, 0, id); } }
+  sortOrderSave(scope, order);
+}
+function sortReset(scope){
+  var o = sortStore(); delete o[scope];
+  try{ localStorage.setItem(SORT_KEY, JSON.stringify(o)); }catch(e){}
+  var fn = window.__SORT_RERENDER; if(typeof fn === "function") fn();
+}
+/* 每卡右上排序按钮组 */
+function sortBtns(scope, id){
+  return '<span class="sort-btns">' +
+    '<button class="sort-btn" data-scope="' + esc(scope) + '" data-id="' + esc(id) + '" data-op="top" title="置顶到最前">⏫</button>' +
+    '<button class="sort-btn" data-scope="' + esc(scope) + '" data-id="' + esc(id) + '" data-op="up" title="上移一位">↑</button>' +
+    '<button class="sort-btn" data-scope="' + esc(scope) + '" data-id="' + esc(id) + '" data-op="down" title="下移一位">↓</button></span>';
+}
+function sortBar(scope, hint){
+  return '<div style="display:flex;align-items:center;gap:8px;margin:6px 0 10px;flex-wrap:wrap">' +
+    '<span style="font-size:11px;color:#8a9b8f;background:#f2f6f0;border:1px solid #e2eadf;border-radius:999px;padding:4px 10px">🔀 ' + hint + ' 悬停卡片右上角 ⏫↑↓ 调序</span>' +
+    '<button onclick="sortReset(\'' + scope + '\')" style="border:0;cursor:pointer;background:transparent;color:#8a9b8f;font-size:11px;text-decoration:underline;padding:4px 6px">↺ 恢复默认顺序</button></div>';
+}
+/* 捕获阶段拦截 .sort-btn, 避免冒泡触发卡点击; 处理后重渲染当前弹层 */
+document.addEventListener("click", function(ev){
+  var sb = ev.target && ev.target.closest ? ev.target.closest(".sort-btn") : null;
+  if(!sb) return;
+  ev.preventDefault(); ev.stopPropagation();
+  sortMove(sb.getAttribute("data-scope"), sb.getAttribute("data-id"), sb.getAttribute("data-op"));
+  var fn = window.__SORT_RERENDER; if(typeof fn === "function") fn();
+}, true);
 var VL_CAT = "ent";           // 当前选中大类
 var VL_SUB = "";              // 当前选中子菜单("" = 全部)
 function vlLoad(cb){
@@ -977,6 +1047,92 @@ function vlShowModal(titleHtml, bodyHtml){
   var modal = document.querySelector("#mask .modal");
   if(modal) modal.style.maxWidth = "840px";
 }
+var LP = null;          // learning_paths.json 缓存
+var LP_OPEN = {};       // 展开状态 {id:true}
+function vlOpenPaths(){
+  var show = function(){
+    var h = '<div style="max-width:920px;margin:0 auto">';
+    h += '<div style="font-size:22px;font-weight:900;color:#173a30;margin-bottom:2px">' + esc(LP.title) + '</div>';
+    h += '<div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:10px">' + esc(LP.subtitle) + '</div>';
+    h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
+    h += '<button onclick="vlSavePaths()" style="background:var(--lime);color:#173a30;border:0;padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer">📌 全部沉淀进 Obsidian</button>';
+    h += '<button onclick="closeM()" style="background:transparent;border:1px solid #dcded7;padding:8px 14px;border-radius:10px;font-size:12.5px;cursor:pointer">关闭</button>';
+    h += '</div>';
+    // 排序条
+    h += sortBar("paths", "6 条学习方向 · 当前重点放最前, 学完往后移");
+    // 方向卡
+    var sorted = sortApply("paths", LP.paths.slice(), function(p){ return p.id; });
+    sorted.forEach(function(p){
+      var open = LP_OPEN[p.id];
+      h += '<div class="path-card" data-pid="' + esc(p.id) + '" style="background:#fff;border:1px solid #dde5dc;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(25,45,37,.04)">';
+      h += '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
+      h += '<span style="font-size:22px">' + p.icon + '</span>';
+      h += '<div style="flex:1;min-width:200px">';
+      h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:15px;font-weight:900;color:#17231f">' + esc(p.title) + '</span><span style="font-size:10px;background:#e8f0e4;color:#3f6a45;border-radius:999px;padding:2px 8px;font-weight:700">' + esc(p.tag) + '</span></div>';
+      h += '<div style="font-size:11.5px;color:#7a8a7f;margin-top:3px">适合: ' + esc(p.fit) + '</div>';
+      h += '</div>';
+      h += '<span style="margin-left:auto;display:flex;align-items:center;gap:8px">' + sortBtns("paths", p.id) + '<button class="ask-btn" style="background:' + (open ? "#e8f0e4" : "#163c31") + ';color:' + (open ? "#2a5a36" : "#fff") + ';font-size:11.5px" onclick="lpToggle(\'' + esc(p.id) + '\')">' + (open ? "收起 ▲" : "展开看 SOP ▼") + '</button></span>';
+      h += '</div>';
+      if(open){
+        h += '<div style="margin-top:10px;border-top:1px dashed #e3e9e2;padding-top:10px">';
+        // 为什么
+        h += '<div style="font-size:11px;font-weight:800;color:#c9962e;letter-spacing:.06em;margin-bottom:4px">🎯 为什么选它 · 我的判断</div>';
+        h += '<div style="background:#fdf9ee;border:1px solid #f0e6c8;border-radius:10px;padding:9px 12px;font-size:12.5px;color:#5a4a22;line-height:1.7;margin-bottom:10px">' + esc(p.why) + '</div>';
+        // SOP 步骤
+        h += '<div style="font-size:11px;font-weight:800;color:#3f6a45;letter-spacing:.06em;margin-bottom:6px">📋 SOP · 照着做</div>';
+        p.sop.forEach(function(st, si){
+          h += '<div style="display:flex;gap:8px;margin-bottom:6px">';
+          h += '<div style="width:20px;height:20px;flex:0 0 20px;border-radius:7px;background:#163c31;color:#fff;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px">' + (si + 1) + '</div>';
+          h += '<div style="flex:1"><b style="font-size:12.5px;color:#17231f">' + esc(st.t) + '</b><div style="font-size:12px;color:#55655c;line-height:1.65">' + esc(st.d) + '</div></div>';
+          h += '</div>';
+        });
+        // 避坑
+        h += '<div style="font-size:11px;font-weight:800;color:#b0483a;letter-spacing:.06em;margin:8px 0 4px">⚠️ 避坑</div>';
+        h += '<div style="background:#fdf1ef;border:1px solid #f2d9d4;border-radius:10px;padding:8px 12px;font-size:12px;color:#7a3a2e;line-height:1.65;margin-bottom:8px">' + esc(p.pitfall) + '</div>';
+        // 关联
+        if(p.links){
+          h += '<div style="font-size:10.5px;color:#8a9b8f">🔗 关联素材: ' + esc(p.links) + '</div>';
+        }
+        h += '</div>';
+      }
+      h += '</div>';
+    });
+    h += '<div style="font-size:11px;color:#aab5ae;margin-top:6px;line-height:1.6">💡 用法: 阶段不同, 重点不同。把当前最该投入的方向用 ⏫ 置顶; 跑通/学完就 ↓ 往后移, 让列表永远反映你现在的优先级。排序只存在本机浏览器, 换设备会重置; 想长期保存用「沉淀进 Obsidian」。</div>';
+    h += '</div>';
+    vlShowModal("🧭 学习方向 · 助手整理", h);
+    window.__SORT_RERENDER = function(){ vlOpenPaths(); };
+    var modal = document.querySelector("#mask .modal");
+    if(modal) modal.style.maxWidth = "960px";
+  };
+  if(LP){ show(); return; }
+  fetch("learning_paths.json").then(function(r){ return r.json(); })
+  .then(function(d){ LP = d; show(); })
+  .catch(function(e){ alert("加载失败: " + e); });
+}
+function lpToggle(id){
+  LP_OPEN[id] = !LP_OPEN[id];
+  vlOpenPaths();
+}
+function vlSavePaths(){
+  if(!LP){ alert("还没加载完, 稍等再点"); return; }
+  var md = "# " + LP.title + "\n\n> " + LP.subtitle + "\n\n";
+  md += "> 助手基于 500+ 视频原文通读整理 · 沉淀于 " + new Date().toLocaleString("zh-CN") + " · 方向顺序 = 当前优先级\n\n";
+  var sorted = sortApply("paths", LP.paths.slice(), function(p){ return p.id; });
+  sorted.forEach(function(p, i){
+    md += "\n## " + (i + 1) + ". " + p.icon + " " + p.title + "（" + p.tag + "）\n\n";
+    md += "**为什么选它 · 我的判断**: " + p.why + "\n\n";
+    md += "**适合**: " + p.fit + "\n\n";
+    md += "**SOP**:\n";
+    p.sop.forEach(function(st, si){ md += (si + 1) + ". **" + st.t + "**: " + st.d + "\n"; });
+    md += "\n**避坑**: " + p.pitfall + "\n\n";
+    if(p.links) md += "**关联素材**: " + p.links + "\n";
+  });
+  fetch("/api/save_doc", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({title: "学习方向助手整理", content: md, folder: "复盘"})})
+  .then(function(r){ return r.json(); })
+  .then(function(d){ alert(d.ok ? "✅ 已沉淀到 Obsidian: " + (d.path||"") : "❌ " + (d.error||"失败")); })
+  .catch(function(e){ alert("❌ 保存失败: " + e); });
+}
 function vlOpenManual(){
   var SECTS = [
     {k:"client", icon:"🎯", name:"客户是谁 · 商机判断", lead:"先搞清真实成交画像和商机前提——不是每个客户都值得花时间。", re:/客户|企业|老板|大中小|需求|画像|商家|商机|前提|验证|筛选|判断|值不值|市场|要不要|规模|心态/},
@@ -1012,10 +1168,11 @@ function vlOpenManual(){
       if(!items.length) return;
       h += '<div style="margin:16px 0 8px;display:flex;align-items:center;gap:8px"><span style="font-size:17px">' + s.icon + '</span><span style="font-size:15px;font-weight:800;color:#173a30">' + s.name + '</span><span style="font-size:10.5px;background:#f0ead8;color:#8a6d2a;border-radius:999px;padding:2px 8px">' + items.length + '</span></div>';
       h += '<div style="font-size:11.5px;color:#b08a3a;margin-bottom:6px;font-style:italic">' + s.lead + '</div>';
-      items.forEach(function(p){
+      var sortedP = sortApply("man:" + s.k, items.slice(), function(p){ return p.name; });
+      sortedP.forEach(function(p){
         var multi = p.n >= 3;
         h += '<div class="mc-cluster" data-ci="' + p.ci + '" data-cidx="' + p.cidx + '" style="background:#fffdf5;border:1px solid ' + (multi ? "#d9b45a" : "#e6dfc9") + ';border-radius:13px;padding:10px 14px;margin-bottom:7px;cursor:pointer">';
-        h += '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span style="font-size:13px;font-weight:800;color:#4a3410">' + esc(p.name) + '</span>' + (multi ? '<span style="font-size:10px;background:#c9962e;color:#fff;border-radius:999px;padding:1px 7px">' + p.n + ' 条共性</span>' : '') + '</div>';
+        h += '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span style="font-size:13px;font-weight:800;color:#4a3410">' + esc(p.name) + '</span>' + (multi ? '<span style="font-size:10px;background:#c9962e;color:#fff;border-radius:999px;padding:1px 7px">' + p.n + ' 条共性</span>' : '') + '<span style="margin-left:auto">' + sortBtns("man:" + s.k, p.name) + '</span></div>';
         h += '<div style="font-size:12px;color:#7a6a45;line-height:1.6;margin-top:3px">' + esc(p.summary) + '</div>';
         h += '</div>';
       });
@@ -1039,6 +1196,7 @@ function vlOpenManual(){
     if(mb) mb.innerHTML = h;
     var modal = document.querySelector("#mask .modal");
     if(modal) modal.style.maxWidth = "920px";
+    window.__SORT_RERENDER = function(){ vlOpenManual(); };
   };
   if(MC_DATA){ show(); return; }
   fetch("method_clusters.json").then(function(r){ return r.json(); })
@@ -1082,15 +1240,19 @@ function vlOpenInsights(){
       h += '<button onclick="mcSetCat(' + ci + ')" style="border:0;cursor:pointer;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;background:' + (act ? "#163c31" : "#f0f3ef") + ';color:' + (act ? "#fff" : "#444") + '">' + esc(c.icon) + ' ' + esc(c.cat) + ' <span style="opacity:.6">' + c.clusters.length + '</span></button>';
     });
     h += '</div>';
-    // 簇列表
+    // 簇列表(支持手动排序)
     var cur = MC_DATA[MC_CAT];
-    cur.clusters.forEach(function(cl){
+    var sorted = sortApply("mc:" + MC_CAT, cur.clusters.slice(), function(cl){ return cl.name; });
+    h += sortBar("mc:" + MC_CAT, "方法簇");
+    sorted.forEach(function(cl){
+      var cidx = cur.clusters.indexOf(cl);   // 还原真实索引(data-cidx 必须指向原数组)
       var multi = cl.n >= 3;
-      h += '<div class="mc-cluster" data-ci="' + MC_CAT + '" data-cidx="' + cur.clusters.indexOf(cl) + '" style="background:#fff;border:1px solid ' + (multi ? "#bfd9d0" : "#e8e4d8") + ';border-radius:15px;padding:13px 16px;margin-bottom:10px;cursor:pointer">';
+      h += '<div class="mc-cluster" data-ci="' + MC_CAT + '" data-cidx="' + cidx + '" style="background:#fff;border:1px solid ' + (multi ? "#bfd9d0" : "#e8e4d8") + ';border-radius:15px;padding:13px 16px;margin-bottom:10px;cursor:pointer">';
       h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
       h += '<span style="font-size:13.5px;font-weight:800;color:' + (multi ? "#145c42" : "#3c2a66") + '">' + esc(cl.name) + '</span>';
       if(multi){ h += '<span style="font-size:10px;background:#145c42;color:#fff;border-radius:999px;padding:2px 8px;font-weight:700">' + cl.n + ' 条共性</span>'; }
       else { h += '<span style="font-size:10px;background:#eef;color:#556;border-radius:999px;padding:2px 8px">单条经验</span>'; }
+      h += '<span style="margin-left:auto">' + sortBtns("mc:" + MC_CAT, cl.name) + '</span>';
       h += '</div>';
       h += '<div style="font-size:12px;color:#666;line-height:1.65;margin-top:5px">' + esc(cl.summary) + '</div>';
       h += '<div style="font-size:11px;color:#145c42;font-weight:700;margin-top:6px">' + (multi ? "点击看完整方法 + 来源视频 →" : "点击看这条经验详情 →") + '</div>';
@@ -1105,6 +1267,7 @@ function vlOpenInsights(){
     if(mb) mb.innerHTML = h;
     var modal = document.querySelector("#mask .modal");
     if(modal) modal.style.maxWidth = "920px";
+    window.__SORT_RERENDER = function(){ vlOpenInsights(); };
   };
   if(MC_DATA){ show(); return; }
   fetch("method_clusters.json").then(function(r){ return r.json(); })
@@ -1220,9 +1383,15 @@ function vlMethodHtml(){
     });
     h += '</div></div>';
   } else {
-    cur.blocks.forEach(function(b, bi){
+    var sortedB = sortApply("mg:" + cur.id, cur.blocks.slice(), function(b){ return b.t; });
+    h += sortBar("mg:" + cur.id, "方法论卡");
+    sortedB.forEach(function(b){
+      var bi = cur.blocks.indexOf(b);
       h += '<div class="mg-card" data-sid="' + esc(cur.id) + '" data-bi="' + bi + '" style="background:#fff;border:1px solid #e6e0f0;border-radius:13px;padding:11px 14px;margin-bottom:8px;cursor:pointer">';
+      h += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
       h += '<div style="font-size:13px;font-weight:800;color:#3c2a66">' + esc(b.t) + '</div>';
+      h += '<span style="margin-left:auto">' + sortBtns("mg:" + cur.id, b.t) + '</span>';
+      h += '</div>';
       h += '<div style="font-size:12.3px;color:#4a4a5a;line-height:1.7;margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">' + esc(b.b) + '</div>';
       h += '<div style="font-size:10.5px;color:#9a8ab8;margin-top:6px">' + (b.src ? "出处: " + esc(b.src) : "") + ' · 点击展开</div>';
       h += '</div>';
@@ -1234,7 +1403,7 @@ function vlMethodHtml(){
   h += '</div></div>';
   return h;
 }
-function vlMethodTab(id){ MG_TAB = id; var mb = document.getElementById("mBody"); if(mb) mb.innerHTML = vlMethodHtml(); }
+function vlMethodTab(id){ MG_TAB = id; var mb = document.getElementById("mBody"); if(mb) mb.innerHTML = vlMethodHtml(); window.__SORT_RERENDER = function(){ vlMethodTab(MG_TAB); }; }
 /* 事件委托: .mg-card 点击 → mgDetail(避免内联 onclick 引号地狱/卡死) */
 document.addEventListener("click", function(ev){
   var t = ev.target;
@@ -2184,13 +2353,16 @@ function quickDocs(){
     {n:"📄 10 产出物模板", d:"每关要交什么", p:"obs/成长系统/10_每关产出物模板_v1.md"},
     {n:"🏆 11 案例库", d:"案例→功能组合", p:"obs/成长系统/11_真实案例库_案例与组合理由_v1.md"},
     {n:"📖 12 术语词典", d:"专业词大白话", p:"obs/成长系统/12_关键术语词典_v1.md"},
-    {n:"📚 别人怎么做", d:"CAF/NIST/Agent/RAG 方法论卡", jump:"c4"}
+    {n:"📚 别人怎么做", d:"CAF/NIST/Agent/RAG 方法论卡", jump:"c4"},
+    {n:"🎯 学习方向", d:"助手整理的 6 条路 · 可排序", fn:"vlOpenPaths"}
   ];
   var h = '<div style="margin:4px 0 0;display:flex;gap:6px;flex-wrap:wrap">';
   docs.forEach(function(d, i){
-    var onclick = d.jump
-      ? "view={mode:'dir',dir:'c',sub:'" + d.jump + "'};renderAll()"
-      : "openDoc('" + d.p + "','" + esc(d.n).replace(/'/g, "\\'") + "','" + esc(d.d).replace(/'/g, "\\'") + "','q" + i + "')";
+    var onclick = d.fn
+      ? d.fn
+      : (d.jump
+        ? "view={mode:'dir',dir:'c',sub:'" + d.jump + "'};renderAll()"
+        : "openDoc('" + d.p + "','" + esc(d.n).replace(/'/g, "\\'") + "','" + esc(d.d).replace(/'/g, "\\'") + "','q" + i + "')");
     h += '<button onclick="' + onclick + '" style="padding:5px 10px;border-radius:999px;background:#f4f9f4;border:1px solid #dceade;cursor:pointer;color:var(--ink);font-size:11px;font-weight:600;font:inherit;transition:.15s" onmouseover="this.style.borderColor=\'#9db86a\'" onmouseout="this.style.borderColor=\'#dceade\'">' + d.n + '</button>';
   });
   h += '</div>';
@@ -2609,7 +2781,7 @@ function renderSearch(content, eyebrow, title, crumb, q){
     if(vh.length === 0) return;
     var h2 = '<div class="rcount" style="margin-top:14px;border-top:1px dashed #e0dac8;padding-top:10px">📁 库内文档命中 ' + vh.length + ' 条（磁盘全文）</div>';
     vh.slice(0, 12).forEach(function(h){
-      h2 += '<div class="res-item" style="cursor:pointer" onclick="window.open(\'/obs/' + encodeURIComponent(h.file).replace(/%2F/g, "/") + '\',\'_blank\')"><h5>📄 ' + esc(h.file) + '</h5><div class="loc">…' + esc(h.snippet) + '…</div></div>';
+      h2 += '<div class="res-item" style="cursor:pointer" onclick="window.open(\'obs/' + encodeURIComponent(h.file).replace(/%2F/g, "/") + '\',\'_blank\')"><h5>📄 ' + esc(h.file) + '</h5><div class="loc">…' + esc(h.snippet) + '…</div></div>';
     });
     box.innerHTML = h2;
   }).catch(function(){});
@@ -3074,8 +3246,8 @@ function renderDir(content, eyebrow, title, crumb){
       aHtml += '<div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:6px">🧪 审核标准 = 双 Agent 审计方法论(权威版)</div>';
       aHtml += '<div style="font-size:12px;color:#65736e;line-height:1.7;margin-bottom:12px">下面这份是 <b>dsh《AI Agent 审计·排查·Bug 修复方法论》</b> + <b>OpenClaw《企业AI-Agent调试审计排查方法论-v3》</b> 融合出来的实操全文：13类Bug地图 → 四关清单 → 三审流水线 → 五层测试 → 四步调试 → 权限5闸门 → 10个真实事故案例 → 工具链。看完还有疑惑，点下面两个按钮直接读 <b>65KB / 45KB 完整原文报告</b>（词都能点、排版好）。</div>';
       aHtml += '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
-        '<button onclick="openFullReport(\'/obs/成长系统/01a_dsh审计报告_AI%20Agent审计排查Bug方法论.md\')" style="flex:1;min-width:220px;background:#163c31;color:#fff;border:0;padding:12px 16px;border-radius:14px;font-size:13.5px;font-weight:800;cursor:pointer;text-align:left">📖 完整报告① dsh《AI Agent 审计排查 Bug》(65KB,1697行)</button>' +
-        '<button onclick="openFullReport(\'/obs/成长系统/01b_openclaw审计报告_调试审计排查v3.md\')" style="flex:1;min-width:220px;background:#2a6f4e;color:#fff;border:0;padding:12px 16px;border-radius:14px;font-size:13.5px;font-weight:800;cursor:pointer;text-align:left">📖 完整报告② OpenClaw《调试审计排查 v3》(45KB,1192行)</button>' +
+        '<button onclick="openFullReport(\'obs/成长系统/01a_dsh审计报告_AI%20Agent审计排查Bug方法论.md\')" style="flex:1;min-width:220px;background:#163c31;color:#fff;border:0;padding:12px 16px;border-radius:14px;font-size:13.5px;font-weight:800;cursor:pointer;text-align:left">📖 完整报告① dsh《AI Agent 审计排查 Bug》(65KB,1697行)</button>' +
+        '<button onclick="openFullReport(\'obs/成长系统/01b_openclaw审计报告_调试审计排查v3.md\')" style="flex:1;min-width:220px;background:#2a6f4e;color:#fff;border:0;padding:12px 16px;border-radius:14px;font-size:13.5px;font-weight:800;cursor:pointer;text-align:left">📖 完整报告② OpenClaw《调试审计排查 v3》(45KB,1192行)</button>' +
         '</div>';
       aHtml += '</div>';
       aHtml += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">';
