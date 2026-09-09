@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>成长系统 · 工作台 v2.1</title>
+<title>成长系统 · 工作台 v2.9</title>
 <style>
 :root{
   --ink:#17231f; --muted:#65736e; --paper:#f4f2eb; --card:#fffdf8;
@@ -2390,7 +2390,7 @@ function renderHome(content, eyebrow, title, crumb){
     {ico:"📚", t:"别人怎么做", d:"500+ 视频经验归簇 · 111 组方法", fn:"vlOpenInsights()", bg:"linear-gradient(135deg,#3c2a66,#6a4f9e)", fg:"#fff"},
     {ico:"📕", t:"方法论总纲", d:"接单 → 交付 → 避坑 全流程", fn:"vlOpenMethod()", bg:"linear-gradient(135deg,#8a5a17,#c9962e)", fg:"#fff"},
     {ico:"⚡", t:"接单作战手册", d:"32 组方法簇 · 按实战场景", fn:"vlOpenManual()", bg:"linear-gradient(135deg,#145c42,#3f8f6a)", fg:"#fff"},
-    {ico:"🩺", t:"项目体检", d:"答 10 问 → 出载体+零件清单方案", fn:"openHealthCheck()", bg:"linear-gradient(135deg,#0f3d5e,#1f7a9e)", fg:"#fff"}
+    {ico:"🩺", t:"项目体检", d:"填项目情况 → Hermes 读 23/24/25 出开工方案", fn:"openHealthCheck()", bg:"linear-gradient(135deg,#0f3d5e,#1f7a9e)", fg:"#fff"}
   ];
   QUICKC.forEach(function(q){
     html += '<div class="quickbig" onclick="' + q.fn + '" style="border-radius:16px;padding:14px 16px;background:' + q.bg + ';color:' + q.fg + ';cursor:pointer;transition:.18s;box-shadow:0 3px 10px rgba(25,45,37,.1)">' +
@@ -3128,10 +3128,21 @@ function renderProj(content, eyebrow, title, crumb){
   // 加载真实项目库
   fetch("/api/projects").then(function(r){return r.json();}).then(function(d){
     if(d.ok && d.projects && d.projects.length){
-      var rh = '<div style="margin-top:16px"><h3 style="font-size:15px;color:var(--ink)">📂 Obsidian 项目库（新建项目落在这里）</h3><div class="proj-grid" style="margin-top:8px">';
+      var rh = '<div style="margin-top:16px"><h3 style="font-size:15px;color:var(--ink)">📂 可复用项目档案（Obsidian 真相源）</h3>' +
+        '<div style="font-size:11px;color:var(--muted);line-height:1.6;margin-top:4px">每份档案回答：这单在哪一关、交过什么、哪些坑已验证。点「查看档案」读全文，点「项目体检」用 23/24/25 给这单出开工方案并落回档案。</div>' +
+        '<div class="proj-grid" style="margin-top:8px">';
       d.projects.forEach(function(p){
         var name = p.file.replace(/\.md$/, "");
-        rh += '<div class="proj-card" onclick="openRealProj(\'' + esc(p.file).replace(/'/g,"\\'") + '\')"><h3>' + esc(name) + '</h3><p style="font-size:11px">' + esc((p.preview||"").replace(/\n/g," ").slice(0,60)) + '</p></div>';
+        var fileJs = esc(p.file).replace(/'/g, "\\'");
+        var status = p.status ? '<div class="tag" style="background:#eef3e8;color:#2d6a4f">' + esc(p.status) + '</div>' : "";
+        var stage = p.stage ? '<div class="tag" style="background:#fff3e0;color:#9a6a1a">' + esc(p.stage) + '</div>' : "";
+        rh += '<div class="proj-card"><h3>' + esc(p.title || name) + '</h3>' +
+          '<p style="font-size:11px;min-height:44px">' + esc((p.preview||"").replace(/\n/g," ").slice(0,110)) + '</p>' +
+          '<div class="tags">' + status + stage + '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">' +
+          '<button onclick="openProjectArchive(\'' + fileJs + '\',\'' + esc(p.title || name).replace(/'/g,"\\'") + '\')" style="flex:1;min-width:120px;background:var(--green);color:#fff;border:0;border-radius:9px;padding:8px 10px;font-size:12px;cursor:pointer;font-weight:700">📄 查看档案</button>' +
+          '<button onclick="hcForProject(\'' + fileJs + '\',\'' + esc(p.title || name).replace(/'/g,"\\'") + '\')" style="flex:1;min-width:120px;background:var(--orange);color:#fff;border:0;border-radius:9px;padding:8px 10px;font-size:12px;cursor:pointer;font-weight:700">🩺 项目体检</button>' +
+          '</div></div>';
       });
       rh += "</div></div>";
       document.getElementById("realProjects").innerHTML = rh;
@@ -3280,13 +3291,31 @@ function toHomeAsk(pre){
 }
 function openRealProj(file){
   var name = file.replace(/\.md$/, "");
-  var html = '<div class="scen-build"><h3>📁 ' + esc(name) + "</h3><p style='color:var(--muted);font-size:12px'>这是 Obsidian 项目库里的真实项目文档，建议直接用 Obsidian 打开编辑：</p>";
-  html += '<div class="plan-sec"><h4>📄 项目文档内容</h4><p style="font-size:13px">打开 Obsidian → 🏗️AI记忆库/方法论/项目库/' + esc(file) + " 直接编辑（方案清单/踩过的坑/复盘结论）</p></div>";
-  html += "<div class='ft'>在 Obsidian 里维护项目细节，本面板只做入口。</div></div>";
-  var content = document.getElementById("content");
-  var extra = document.createElement("div");
-  extra.innerHTML = html;
-  content.appendChild(extra);
+  openProjectArchive(file, name);
+}
+/* 打开项目档案：从 Obsidian 真相源读取并渲染成网页长文 */
+function openProjectArchive(file, title){
+  var name = (title || file.replace(/\.md$/, "")).replace(/\.md$/, "");
+  var box = document.getElementById("mBody");
+  if(!box) return;
+  box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">📁 项目档案读取中…</div>';
+  vlShowModal("📁 项目档案 · " + name);
+  var url = "obs/项目库/" + encodeURIComponent(file);
+  fetch(url).then(function(r){ return r.text(); }).then(function(md){
+    var wrap = document.createElement("div");
+    wrap.innerHTML = mdToHtml(md);
+    if(TERM_IDX){ enhanceDoc(wrap); } else { loadTermAssets(function(){ enhanceDoc(wrap); }); }
+    box.innerHTML = "";
+    box.appendChild(wrap);
+    var ac = document.createElement("div");
+    ac.style.cssText = "display:flex;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid #eee;flex-wrap:wrap";
+    ac.innerHTML = '<button onclick="hcForProject(\'' + esc(file).replace(/'/g,"\\'") + '\',\'' + esc(name).replace(/'/g,"\\'") + '\')" style="background:var(--orange);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer">🩺 用 23/24/25 给这个项目做一次体检</button>' +
+      '<button onclick="closeM()" style="background:transparent;border:1px solid #d8d2c0;border-radius:10px;padding:10px 16px;font-size:13px;cursor:pointer">关闭</button>';
+    box.appendChild(ac);
+    box.scrollTop = 0;
+  }).catch(function(){
+    box.innerHTML = '<div style="padding:30px;color:#b34">读取失败:' + esc(url) + "</div>";
+  });
 }
 function quickAudit(action, fname){
   // 无确认直接执行(低风险操作, 用户已明确点了), 用 toast 轻提示
@@ -4163,7 +4192,7 @@ function submitCollect(){
 
 
 renderAll();
-window.GS_VERSION = "v2.8-guide-20260903-2030";
+window.GS_VERSION = "v2.9-project-archive-20260909";
 var vf = document.createElement("div");
 vf.style.cssText = "position:fixed;right:10px;bottom:8px;font-size:10px;color:rgba(23,35,31,.35);z-index:999";
 vf.textContent = "成长系统 " + window.GS_VERSION + " · 如按钮无响应请 ⌘⇧R 强刷";

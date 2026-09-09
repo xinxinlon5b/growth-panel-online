@@ -1,1 +1,22 @@
-{"ok": true, "time": "2026-09-09 12:33", "candidate_pool": 9, "candidate_files": ["[学习] ethan-funny_awesome-rag.md", "[学习] kelseyhightower_nocode.md", "[学习] langflow-ai_langflow.md", "[学习] langgenius_dify.md", "[学习] ruvnet_ruflo.md"], "audit_reports": 4, "audit_files": ["AUDIT-2026-09-03-001-工作台首轮三审.md", "AUDIT-2026-09-03-002-12Factor卡v2复审.md", "[已审核] 12-Factor-Agents-生产级Agent设计12条原则.md", "[已审核] AI应用评测与可观测-上线前保障.md"], "foundations_dirs": 12, "decision_cards": 7, "obs_vault": true}
+{
+  "ok": true,
+  "time": "2026-09-09 13:32",
+  "candidate_pool": 9,
+  "candidate_files": [
+    "[学习] ethan-funny_awesome-rag.md",
+    "[学习] kelseyhightower_nocode.md",
+    "[学习] langflow-ai_langflow.md",
+    "[学习] langgenius_dify.md",
+    "[学习] ruvnet_ruflo.md"
+  ],
+  "audit_reports": 4,
+  "audit_files": [
+    "AUDIT-2026-09-03-001-工作台首轮三审.md",
+    "AUDIT-2026-09-03-002-12Factor卡v2复审.md",
+    "[已审核] 12-Factor-Agents-生产级Agent设计12条原则.md",
+    "[已审核] AI应用评测与可观测-上线前保障.md"
+  ],
+  "foundations_dirs": 12,
+  "decision_cards": 7,
+  "obs_vault": true
+}

@@ -6,6 +6,8 @@
  * ============================================================ */
 
 /* ---------- 辅助字段（可选，选了拼进 prompt，不选交给 agent 从文本推断） ---------- */
+var hcProject = null;   // {file,title} = 从项目档案发起的体检，结果落回该档案
+
 var HC_FIELDS = {
   sens:   { label:"数据敏感度", opts:["不敏感/公开信息","PII 隐私数据","商业机密","金融/医疗/政府级"] },
   it:     { label:"客户 IT 能力", opts:["没有，越省事越好","半懂，能按文档操作","有专职 IT/研发"] },
@@ -17,6 +19,9 @@ function hcStepHtml(){
   var h = '<div style="display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 220px);overflow-y:auto;padding:4px 2px">';
   h += '<div style="background:#eef7f1;border:1px solid #d5e8dc;border-radius:12px;padding:10px 14px;font-size:12.5px;line-height:1.7;color:#2c5a46">'
      + '💡 把项目情况一句话讲清楚（谁用、做什么、数据在哪、规模多大、什么预算），Hermes 会完整读三份方法论文档（载体选型/零件装配/工程全景）后，给你一份能落地的 <b>开工方案</b>：推荐载体 + 必装零件 + 工程阶段 + 报价。约 1 分钟。</div>';
+  if(hcProject && hcProject.title){
+    h += '<div style="background:#fff3e0;border:1px solid #f0d9a8;border-radius:12px;padding:9px 14px;font-size:12px;line-height:1.7;color:#7a5b1e">📁 本次体检将读已有档案并落回：<b>' + esc(hcProject.title) + '</b></div>';
+  }
   h += '<textarea id="hcInput" rows="6" placeholder="例：长春 8 人货代公司，老板想花 5 万上 AI 自动找俄罗斯客户、自动回消息，要求全自动群发，自己不懂技术、没有 IT，数据是客户联系方式（PII），希望越快上线越好" style="width:100%;box-sizing:border-box;border:1px solid #d8d2c0;border-radius:12px;padding:12px;font-size:13px;line-height:1.7;font-family:inherit;resize:vertical;background:#fdfcf8"></textarea>';
   // 3 个辅助字段
   h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">';
@@ -81,6 +86,15 @@ function hcRun(){
     + '5. **档位报价建议**：按 23 的档位适配（STARTER ¥3-8k / 增长型 ¥8-30k / ENTERPRISE ¥80-300k）给报价结构\n\n'
     + '结论在前、理由在后，每个结论都要能追溯到这三份文档的哪一节。总长控制在 2000 字内，能压成表格就压成表格。';
 
+  // 从项目档案发起时：让 Hermes 先读该档案，复用已验证打法/坑
+  if(hcProject && hcProject.file){
+    q = '这是对已有项目档案的重检/开工方案更新。\n'
+      + '【已有项目档案】\n'
+      + '/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库/方法论/项目库/' + hcProject.file + '\n\n'
+      + '先读这个档案：项目在哪一关、哪些零件已验证、哪些坑真实踩过。然后基于 23/24/25 输出开工方案，并把「复用档案经验」单列一节：哪几条该直接抄、哪几条该改。\n\n'
+      + q;
+  }
+
   fetch('/api/ask', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({q: q, max_turns: 8, max_len: 16000, max_q: 4000})})
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -135,10 +149,20 @@ var hcLast = null;
 function hcSaveResult(){
   if(!hcLast){ alert('还没有体检结果'); return; }
   var md = '# 项目开工方案 · ' + new Date().toISOString().slice(0,10) + '\n\n' + (hcLast.answer || '');
+  if(hcProject && hcProject.file){
+    fetch('/api/attach_project_check', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ file: hcProject.file, content: md })
+    }).then(function(r){ return r.json(); }).then(function(d){
+      alert(d && d.ok ? '✅ 体检方案已落回项目档案：' + hcProject.title : ('⚠️ ' + (d && d.error || '保存失败')));
+    }).catch(function(){ alert('⚠️ 保存失败（服务未开/接口不可用）'); });
+    return;
+  }
   fetch('/api/save_doc', {
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({ folder:'项目库', name:'体检_' + new Date().toISOString().slice(0,10) + '_' + Date.now().toString(36), content: md })
+    body: JSON.stringify({ folder:'项目库', title:'体检_' + new Date().toISOString().slice(0,10) + '_' + Date.now().toString(36), content: md })
   }).then(function(r){ return r.json(); }).then(function(d){
     alert(d && d.ok ? '✅ 已存进 Obsidian 项目库' : ('⚠️ ' + (d && d.error || '保存失败')));
   }).catch(function(){ alert('⚠️ 保存失败（服务未开/接口不可用）'); });
@@ -146,5 +170,17 @@ function hcSaveResult(){
 
 /* ---------- 入口 ---------- */
 function openHealthCheck(){
+  hcProject = null;
   vlShowModal('🩺 项目体检 · 填项目情况出开工方案', hcStepHtml());
+}
+
+/* 从项目档案卡片/详情发起的体检：带上档案文件，Hermes 先读档案再出方案 */
+function hcForProject(file, title){
+  hcProject = { file: file, title: title || file.replace(/\.md$/, "") };
+  vlShowModal('🩺 项目体检 · ' + hcProject.title, hcStepHtml());
+  var inp = document.getElementById('hcInput');
+  if(inp){
+    inp.value = '这是已有项目档案：' + hcProject.title + '。\n请结合档案里的关卡进度/已验证坑，按 23/24/25 给下一步出方案。';
+    inp.focus();
+  }
 }
