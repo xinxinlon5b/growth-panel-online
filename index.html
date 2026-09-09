@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>成长系统 · 工作台 v2.10</title>
+<title>成长系统 · 工作台 v2.11</title>
 <style>
 :root{
   --ink:#17231f; --muted:#65736e; --paper:#f4f2eb; --card:#fffdf8;
@@ -1706,7 +1706,8 @@ function renderMap(content, eyebrow, title, crumb){
     {id:"14", label:"🛠️ 14 装机手册", desc:"给客户装 NIFTY+Hermes（Win/Mac）", src:"obs/成长系统/14_装机手册_v1.md"},
     {id:"23", label:"📦 23 载体选型", desc:"用什么承载客户的AI程序(7形态+决策树)", src:"obs/成长系统/23_交付载体怎么选_v1.md"},
     {id:"24", label:"🧰 24 零件装配", desc:"怎么知道项目该装哪些零件(6步推导)", src:"obs/成长系统/24_项目零件装配清单_v1.md"},
-    {id:"25", label:"🏗️ 25 工程全景", desc:"程序从0被做出来的全流程(MECE 12阶段)", src:"obs/成长系统/25_程序全流程工程全景_v1.md"}
+    {id:"25", label:"🏗️ 25 工程全景", desc:"程序从0被做出来的全流程(MECE 12阶段)", src:"obs/成长系统/25_程序全流程工程全景_v1.md"},
+    {id:"27", label:"📚 27 权威调研", desc:"deerflow 软件工程+企业AI落地全景", src:"obs/成长系统/27_deerflow权威调研报告_软件工程与企业AI落地_v1.md"}
   ];
   var curTab = null;
   tabs.forEach(function(t){ if(t.id === cur) curTab = t; });
@@ -2421,7 +2422,8 @@ function quickDocs(){
     {n:"🗺️ 09 关卡地图", d:"接项目→看自己在哪关", p:"obs/成长系统/09_企业AI落地全流程关卡地图_v1.md"},
     {n:"📄 10 产出物模板", d:"每关要交什么", p:"obs/成长系统/10_每关产出物模板_v1.md"},
     {n:"🏆 11 案例库", d:"案例→功能组合", p:"obs/成长系统/11_真实案例库_案例与组合理由_v1.md"},
-    {n:"📖 12 术语词典", d:"专业词大白话", p:"obs/成长系统/12_关键术语词典_v1.md"}
+    {n:"📖 12 术语词典", d:"专业词大白话", p:"obs/成长系统/12_关键术语词典_v1.md"},
+    {n:"📚 27 权威调研", d:"软件工程+企业AI落地全景", p:"obs/成长系统/27_deerflow权威调研报告_软件工程与企业AI落地_v1.md"}
   ];
   var h = '<div style="margin:4px 0 0;display:flex;gap:6px;flex-wrap:wrap">';
   docs.forEach(function(d, i){
@@ -4195,7 +4197,7 @@ function submitCollect(){
 
 
 renderAll();
-window.GS_VERSION = "v2.10-project-schema-20260909";
+window.GS_VERSION = "v2.11-deerflow-report-20260909";
 var vf = document.createElement("div");
 vf.style.cssText = "position:fixed;right:10px;bottom:8px;font-size:10px;color:rgba(23,35,31,.35);z-index:999";
 vf.textContent = "成长系统 " + window.GS_VERSION + " · 如按钮无响应请 ⌘⇧R 强刷";
