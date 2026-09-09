@@ -1703,7 +1703,10 @@ function renderMap(content, eyebrow, title, crumb){
     {id:"15", label:"📊 15 数据体系", desc:"企业AI落地的数据全景", src:"obs/成长系统/15_企业AI落地数据完整体系_v1.md"},
     {id:"16", label:"🔬 16 调研结论", desc:"OpenClaw+dsh 双agent数据调研", src:"obs/成长系统/16_数据调研双agent结论_v1.md"},
     {id:"17", label:"🧠 17 转型知识库", desc:"企业AI转型落地知识库(双Agent融合)", src:"obs/成长系统/17_企业AI转型落地知识库_v1.md"},
-    {id:"14", label:"🛠️ 14 装机手册", desc:"给客户装 NIFTY+Hermes（Win/Mac）", src:"obs/成长系统/14_装机手册_v1.md"}
+    {id:"14", label:"🛠️ 14 装机手册", desc:"给客户装 NIFTY+Hermes（Win/Mac）", src:"obs/成长系统/14_装机手册_v1.md"},
+    {id:"23", label:"📦 23 载体选型", desc:"用什么承载客户的AI程序(7形态+决策树)", src:"obs/成长系统/23_交付载体怎么选_v1.md"},
+    {id:"24", label:"🧰 24 零件装配", desc:"怎么知道项目该装哪些零件(6步推导)", src:"obs/成长系统/24_项目零件装配清单_v1.md"},
+    {id:"25", label:"🏗️ 25 工程全景", desc:"程序从0被做出来的全流程(MECE 12阶段)", src:"obs/成长系统/25_程序全流程工程全景_v1.md"}
   ];
   var curTab = null;
   tabs.forEach(function(t){ if(t.id === cur) curTab = t; });
@@ -2386,7 +2389,8 @@ function renderHome(content, eyebrow, title, crumb){
     {ico:"🧭", t:"学习方向", d:"6 条路 · 含我的判断 + SOP · 可排序", fn:"vlOpenPaths()", bg:"linear-gradient(135deg,#163c31,#2a6b4f)", fg:"#fff"},
     {ico:"📚", t:"别人怎么做", d:"500+ 视频经验归簇 · 111 组方法", fn:"vlOpenInsights()", bg:"linear-gradient(135deg,#3c2a66,#6a4f9e)", fg:"#fff"},
     {ico:"📕", t:"方法论总纲", d:"接单 → 交付 → 避坑 全流程", fn:"vlOpenMethod()", bg:"linear-gradient(135deg,#8a5a17,#c9962e)", fg:"#fff"},
-    {ico:"⚡", t:"接单作战手册", d:"32 组方法簇 · 按实战场景", fn:"vlOpenManual()", bg:"linear-gradient(135deg,#145c42,#3f8f6a)", fg:"#fff"}
+    {ico:"⚡", t:"接单作战手册", d:"32 组方法簇 · 按实战场景", fn:"vlOpenManual()", bg:"linear-gradient(135deg,#145c42,#3f8f6a)", fg:"#fff"},
+    {ico:"🩺", t:"项目体检", d:"答 10 问 → 出载体+零件清单方案", fn:"openHealthCheck()", bg:"linear-gradient(135deg,#0f3d5e,#1f7a9e)", fg:"#fff"}
   ];
   QUICKC.forEach(function(q){
     html += '<div class="quickbig" onclick="' + q.fn + '" style="border-radius:16px;padding:14px 16px;background:' + q.bg + ';color:' + q.fg + ';cursor:pointer;transition:.18s;box-shadow:0 3px 10px rgba(25,45,37,.1)">' +
@@ -4112,5 +4116,6 @@ vf.style.cssText = "position:fixed;right:10px;bottom:8px;font-size:10px;color:rg
 vf.textContent = "成长系统 " + window.GS_VERSION + " · 如按钮无响应请 ⌘⇧R 强刷";
 document.body.appendChild(vf);
 </script>
+<script src="health_check.js"></script>
 </body>
 </html>
