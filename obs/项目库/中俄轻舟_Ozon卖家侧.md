@@ -1,3 +1,12 @@
+---
+type: project
+title: 中俄轻舟（Ozon 卖家侧）
+domain: PROJECT
+status: 进行中
+updated: 2026-09-09
+source_file: 项目库/中俄轻舟_Ozon卖家侧.md
+---
+
 # 中俄轻舟（Ozon 卖家侧）
 
 > 档案类型：project-archive

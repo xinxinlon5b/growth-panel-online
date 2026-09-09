@@ -1,3 +1,12 @@
+---
+type: project
+title: NIFTY STUDIO · 纳福（本地化 AI 商品图）
+domain: PROJECT
+status: 已交付
+updated: 2026-09-09
+source_file: 项目库/NIFTY_STUDIO_纳福_本地AI商品图.md
+---
+
 # NIFTY STUDIO · 纳福（本地化 AI 商品图）
 
 > 档案类型：project-archive

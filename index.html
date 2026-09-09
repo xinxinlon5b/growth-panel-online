@@ -2481,7 +2481,13 @@ function mdTableBlock(block){
   return out;
 }
 function mdToHtml(md){
-  var lines = String(md || "").split(/\n/);
+  var s = String(md || "");
+  // strip YAML frontmatter (---...--- at top)
+  if (s.indexOf("---") === 0) {
+    var fmEnd = s.indexOf("\n---", 3);
+    if (fmEnd > 0) s = s.slice(fmEnd + 4);
+  }
+  var lines = s.split(/\n/);
   var h = "", inCode = false, codeBuf = [], inUl = false, tblBuf = [];
   function flushTbl(){
     if(tblBuf.length){
