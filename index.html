@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>成长系统 · 工作台 v2.9</title>
+<title>成长系统 · 工作台 v2.10</title>
 <style>
 :root{
   --ink:#17231f; --muted:#65736e; --paper:#f4f2eb; --card:#fffdf8;
@@ -3135,10 +3135,13 @@ function renderProj(content, eyebrow, title, crumb){
         var name = p.file.replace(/\.md$/, "");
         var fileJs = esc(p.file).replace(/'/g, "\\'");
         var status = p.status ? '<div class="tag" style="background:#eef3e8;color:#2d6a4f">' + esc(p.status) + '</div>' : "";
+        var statusNote = p.status_note ? '<div style="font-size:10px;color:var(--muted);margin-top:3px">' + esc(p.status_note) + '</div>' : "";
         var stage = p.stage ? '<div class="tag" style="background:#fff3e0;color:#9a6a1a">' + esc(p.stage) + '</div>' : "";
+        var nextLine = p.next ? '<div style="margin-top:8px;background:#f6f3e8;border:1px solid #e8dfc4;border-radius:9px;padding:7px 9px;font-size:11px;line-height:1.55;color:#6d5720"><b>下一关：</b>' + esc(p.next) + '</div>' : "";
         rh += '<div class="proj-card"><h3>' + esc(p.title || name) + '</h3>' +
           '<p style="font-size:11px;min-height:44px">' + esc((p.preview||"").replace(/\n/g," ").slice(0,110)) + '</p>' +
-          '<div class="tags">' + status + stage + '</div>' +
+          '<div class="tags">' + status + stage + '</div>' + statusNote +
+          nextLine +
           '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">' +
           '<button onclick="openProjectArchive(\'' + fileJs + '\',\'' + esc(p.title || name).replace(/'/g,"\\'") + '\')" style="flex:1;min-width:120px;background:var(--green);color:#fff;border:0;border-radius:9px;padding:8px 10px;font-size:12px;cursor:pointer;font-weight:700">📄 查看档案</button>' +
           '<button onclick="hcForProject(\'' + fileJs + '\',\'' + esc(p.title || name).replace(/'/g,"\\'") + '\')" style="flex:1;min-width:120px;background:var(--orange);color:#fff;border:0;border-radius:9px;padding:8px 10px;font-size:12px;cursor:pointer;font-weight:700">🩺 项目体检</button>' +
@@ -4192,7 +4195,7 @@ function submitCollect(){
 
 
 renderAll();
-window.GS_VERSION = "v2.9-project-archive-20260909";
+window.GS_VERSION = "v2.10-project-schema-20260909";
 var vf = document.createElement("div");
 vf.style.cssText = "position:fixed;right:10px;bottom:8px;font-size:10px;color:rgba(23,35,31,.35);z-index:999";
 vf.textContent = "成长系统 " + window.GS_VERSION + " · 如按钮无响应请 ⌘⇧R 强刷";
