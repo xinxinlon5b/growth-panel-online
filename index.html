@@ -905,6 +905,7 @@ function courseOpen(idx){
       '<button class="ask-btn" style="font-size:12px;background:var(--orange);color:#fff" onclick="courseNote(' + idx + ')">📌 记要点存 Obsidian</button></div></div>' +
       '<div id="courseNoteOut"></div>' +
       '<div style="line-height:1.9;font-size:14.5px;color:#2c2c2c">' + html + '</div>';
+    if(TERM_IDX){ enhanceDoc(reader); } else { loadTermAssets(function(){ enhanceDoc(reader); }); }
     reader.scrollTop = 0;
   }).catch(function(e){ reader.innerHTML = '<div style="color:#c0392b">读取失败: ' + esc(e) + '</div>'; });
 }
