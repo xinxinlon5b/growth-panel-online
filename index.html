@@ -2626,7 +2626,12 @@ function gapsHtml(gaps){
 function doSearch(q){
   q = (q || "").trim(); if(!q) return;
   view = {mode:"search", query:q, dir:null, sub:null};
-  renderAll();
+  if(!TERM_IDX){
+    // 首次搜索: 先异步加载术语词典(几百ms)再渲染 → 顶部词条置顶卡才生效
+    loadTermAssets(function(){ renderAll(); });
+  } else {
+    renderAll();
+  }
 }
 function doAsk(q){
   q = (q || "").trim(); if(!q) return;
@@ -2778,6 +2783,54 @@ function renderSearch(content, eyebrow, title, crumb, q){
   hits.sort(function(a,b){ return b.score - a.score; });
   hits = hits.slice(0, 30);
   var html = "";
+  // —— 📖 术语词典置顶: 查询命中词条键 → 顶部直接给词条卡(可点开), 不再被全库杂音淹没
+  var termHits = [];
+  if (typeof TERM_IDX !== "undefined" && TERM_IDX) {
+    var qKeys = Object.keys(TERM_IDX);
+    var ql = q.toLowerCase();
+    // 1) 整词/包含精确命中词条键
+    qKeys.forEach(function(k){
+      var kl = k.toLowerCase();
+      if (ql === kl || ql.indexOf(kl) >= 0 || kl.indexOf(ql) >= 0) termHits.push(k);
+    });
+    // 2) 中文滑窗 token 命中词条键（冒烟+测试 拆出 冒烟/测试/冒烟测…）
+    if (termHits.length === 0) {
+      var cjk2 = chineseTokens(q);
+      qKeys.forEach(function(k){
+        if (termHits.length >= 5) return;
+        var hit = 0;
+        cjk2.forEach(function(tok){ if (k.indexOf(tok) >= 0) hit++; });
+        // 至少命中一个 2 字或一个 3 字 token
+        if (hit >= 1) termHits.push(k);
+      });
+    }
+    // 3) 保底: 词条键含查询任意 2 字（防“冒烟测试”整串无键但“冒烟”有键）
+    if (termHits.length === 0 && ql.length >= 2) {
+      qKeys.forEach(function(k){
+        var kl = k.toLowerCase();
+        for (var i = 0; i < ql.length - 1; i++) {
+          if (kl.indexOf(ql.substr(i, 2)) >= 0) { termHits.push(k); break; }
+        }
+      });
+    }
+    // 去重
+    termHits = termHits.filter(function(v, i, a){ return a.indexOf(v) === i; });
+    if (termHits.length > 0) {
+      html += '<div style="margin-bottom:12px;border-radius:14px;border:1px solid rgba(215,243,107,.5);background:linear-gradient(135deg,rgba(215,243,107,.14),rgba(255,255,255,.6));padding:13px 15px">';
+      html += '<div style="font-size:12px;font-weight:800;color:var(--green);margin-bottom:8px">📖 术语词典命中（点词看完整解释 + 延伸 + 相关视频）</div>';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:7px">';
+      termHits.slice(0, 5).forEach(function(k){
+        var t = TERM_IDX[k] || {};
+        var cells = (t.line || "").replace(/^\|/, "").replace(/\|$/, "").split("|").map(function(c){ return c.trim().replace(/^\*\*|\*\*$/g, ""); });
+        html += '<div onclick="openTerm(\'' + k.replace(/'/g, "\\'") + '\')" style="cursor:pointer;flex:1 1 200px;max-width:100%;background:#fff;border:1px solid #e8e2d4;border-radius:10px;padding:8px 11px;transition:.15s;box-shadow:0 1px 4px rgba(25,45,37,.06)" onmouseover="this.style.borderColor=\'var(--lime)\';this.style.transform=\'translateY(-1px)\'" onmouseout="this.style.borderColor=\'#e8e2d4\';this.style.transform=\'none\'">';
+        html += '<div style="font-weight:800;font-size:13px;color:var(--ink)">' + esc(k) + (t.en ? ' <span style="font-weight:600;font-size:11px;color:var(--muted)">' + esc(t.en) + '</span>' : '') + '</div>';
+        if (cells[1]) html += '<div style="font-size:11.5px;color:#65736e;margin-top:3px;line-height:1.5">' + esc(cells[1]) + '</div>';
+        html += '<div style="font-size:10.5px;color:var(--lime);font-weight:700;margin-top:4px">点开看详情 →</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
   // —— 深度绑定: ask 模式 = 派 Hermes agent 真答(不再只看本地卡匹配)
   if(view.ask){
     html += '<div style="background:rgba(215,243,107,.10);border:1px solid rgba(215,243,107,.3);border-radius:14px;padding:14px;margin-bottom:12px">' +
