@@ -484,3 +484,27 @@ fde_transition 第 8 章给的三条转型路径之一——**产品/客户背�
 > **可指导性**：8 条 SOP 每条都给出「问题-步骤-产出-坑-适配」五段式，照着走能上手。学习路径分 6 条覆盖零基础/有技术/有产品/产品转型/研发转型/基础研发转型 6 类起点。
 >
 > 建议打印出来贴在工位上——下次接到活，对照「速查流程卡」走即可。
+
+---
+
+## 附 · 一手溯源对照（2026-09-10 补，解决「源头是社区书」问题）
+
+> 上文的 SOP 与结论提炼自 FDE 教程（社区书/视频），本附录把它们**逐条对回原厂/机构一手出处**。
+> 诚实标注：**直接** = 一手源明确讲了这件事；**相关** = 一手源佐证同一模式；**待补** = 暂未找到一手明确表述（以教程经验为准，对外引用时须说明）。
+> 一手源文件在本库：`调研2_FDE一手权威_OpenClaw_20260910.md`（R2）、`调研2_企业AI治理权威_dsh_20260910.md`（R3）、`调研2_工程标准权威_DeerFlow_20260910.md`（R4）。
+
+| SOP | 一手锚点 | 强度 | URL |
+|---|---|---|---|
+| SOP 1 · PSF 三关 | OpenAI 部署方法论「从第一性原理出发 / 解决一个具体问题」 | 相关 | https://openai.com/business/frontier/ |
+| SOP 1 · PSF 三关（失败率依据） | MIT Sloan/BCG 研究：企业 AI 试点高失败率 | 直接 | https://mitsloanindia.com/article/agentic-ai-adoption-is-outpacing-corporate-redesign-mit-smr-bcg-study-finds/ |
+| SOP 2 · MVD 最小可行部署 | OpenAI「先交付早期价值，再迭代到规模化」 | 直接 | https://openai.com/business/the-openai-deployment-company/ |
+| SOP 3 · 五份地图（进场摸家底） | Palantir 平台架构中心（理解客户系统全貌的方法论） | 相关 | https://www.palantir.com/docs/foundry/architecture-center/platforms |
+| SOP 4 · 评测体系 | Anthropic《Building Effective Agents》（评测驱动开发） | 相关 | https://www.anthropic.com/engineering/building-effective-agents |
+| SOP 4 · 评测体系（治理要求） | ISO/IEC 42001 人工智能管理体系（审计与评估） | 直接 | https://www.iso.org/standard/42001 |
+| SOP 5 · 热修复文化 | Anthropic《Effective harnesses for long-running agents》（快速迭代/回环） | 相关 | https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents |
+| SOP 6 · 变革管理三件套 | BCG：74% 企业难以规模化 AI（组织再设计是成败关键） | 直接 | https://www.bcg.com/ja-jp/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scal |
+| SOP 7 · 灯塔筛选 | Anthropic Managed Agents + Rakuten 案例（把成功模式固化为可复制资产） | 相关 | https://www.anthropic.com/engineering/managed-agents |
+| SOP 8 · 经验资产化 | Anthropic FDE JD「codify deployment patterns your team can own」 | 直接 | https://www.anthropic.com/careers/jobs/5302966008 |
+| 角色定位 · FDE 是什么 | OpenAI 官方「The OpenAI Deployment Company」/ Palantir FDE 招聘页 | 直接 | https://www.palantir.com/careers/future-palantirians/ |
+
+**结论**：8 条 SOP 中 **4 条有直接一手佐证**（失败率/MVD/评测治理/变革管理/资产化），**4 条为相关佐证**（原厂讲同一模式但未逐条对应），**0 条属于无据**——即教程提炼的内容在权威侧站得住，但对客户引用时应按「直接/相关」区分措辞（相关项说「业界通行做法」，直接项可引数据）。
