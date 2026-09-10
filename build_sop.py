@@ -1,79 +1,139 @@
 # -*- coding: utf-8 -*-
-"""鱼骨图 SOP 学习页 · v3 终极版
-- 鱼骨图用 SVG 但 viewBox 设为 0 0 容器宽 容器高,JS 渲染后动态改
-- 8 SOP 结构化数据
+"""鱼骨图 SOP 学习页 · v4 重做版(2026-09-10)
+- 鱼骨图改为固定 viewBox 1400x900,SVG 整体缩放
+- 每个步骤/反模式/军规 = 一个矩形文字块 + 斜线 + 圆点
+- 文字用 <text> + <tspan dy> 多行换行,避免重叠
+- 整个页面只画一张鱼骨图(主轴+上分支+下分支),不分散
 - 苹果风 UI / 黑底 / 大留白
 """
 import json, os, html
 
 BASE = "/Users/tkdesign/Documents/Obsidian Vault/🏗️AI记忆库"
-JSON_PATH = "/tmp/sop_data.json"
 OUT = "/Users/tkdesign/growth-system-panel/sop.html"
-
-data = json.load(open(JSON_PATH, encoding="utf-8"))
-SOPS = data
+from _sops_data import SOPS
 
 
 # ============== SVG 鱼骨图 · 用百分比坐标(避开绝对像素问题) ==============
-def render_fishbone_svg(sop, W=800, H=440):
-    """画鱼骨图:viewBox=0 0 W H,所有坐标都按 W/H 百分比算"""
+def wrap_text(text, max_chars=14):
+    """中文文本按 max_chars 字符换行"""
+    text = text.strip()
+    if len(text) <= max_chars:
+        return [text]
+    lines = []
+    while len(text) > max_chars:
+        # 找最近的标点或空格作为切分点
+        cut = text[:max_chars]
+        # 优先在标点处切
+        for i in range(len(cut)-1, max(0, len(cut)-4), -1):
+            if cut[i] in '，。、 ；:：?？!！ ':
+                cut = text[:i+1]
+                break
+        else:
+            cut = text[:max_chars]
+        lines.append(cut)
+        text = text[len(cut):]
+    if text:
+        lines.append(text)
+    return lines
+
+
+def render_fishbone_svg(sop, W=1400, H=900):
+    """完整鱼骨图(单图,不分多块)
+    - viewBox 固定 1400x900
+    - 主轴 y=450 水平
+    - 上方步骤:斜线向上 60° ,矩形文字块 (宽 280,高 120)
+    - 下方反模式/军规:斜线向下 60° ,矩形文字块 (宽 280,高 120)
+    - 文字用 <tspan> 换行避免重叠
+    """
     steps = sop["steps"]
     aps = sop.get("antipatterns", [])
     rules = sop.get("keyrules", [])
-    # 上方步骤
-    top_n = max(len(steps), 1)
+    # 下方分支
     bot = []
-    for ap in aps[:3]: bot.append({"type":"warn", "short":ap[:55]})
-    for r in rules[:3]: bot.append({"type":"army", "short":r[:55]})
-    bot_n = max(len(bot), 1)
-    # 主轴 y
-    main_y = H * 0.55
-    main_x0 = W * 0.05
-    main_x1 = W * 0.92
+    for ap in aps[:3]: bot.append({"type":"warn", "short":ap, "tag":"反模式"})
+    for r in rules[:3]: bot.append({"type":"army", "short":r, "tag":"军规"})
+    # ===== 布局参数 =====
+    main_y = H / 2  # 450
+    margin_l, margin_r = 60, 60
+    main_x0 = margin_l
+    main_x1 = W - margin_r  # 1340
+    # 主轴线
     parts = []
-    # 主轴
-    parts.append(f'<line x1="{main_x0}" y1="{main_y}" x2="{main_x1}" y2="{main_y}" stroke="#48484a" stroke-width="3"/>')
-    parts.append(f'<polygon points="{main_x1},{main_y} {main_x1-18},{main_y-10} {main_x1-18},{main_y+10}" fill="#48484a"/>')
-    # 鱼骨名
-    parts.append(f'<text x="{main_x0-8}" y="{main_y+5}" text-anchor="end" fill="#86868b" font-size="13" font-weight="600" font-family="-apple-system,sans-serif">起点 →</text>')
-    # 步骤节点
+    parts.append(f'<line x1="{main_x0}" y1="{main_y}" x2="{main_x1}" y2="{main_y}" stroke="#5a5a5f" stroke-width="3"/>')
+    # 起点圆点
+    parts.append(f'<circle cx="{main_x0}" cy="{main_y}" r="11" fill="#5a5a5f" stroke="#fff" stroke-width="2.5"/>')
+    parts.append(f'<text x="{main_x0+18}" y="{main_y+6}" fill="#86868b" font-size="18" font-weight="600">起点</text>')
+    # 鱼头
+    head_x = main_x1 + 5
+    parts.append(f'<polygon points="{head_x},{main_y} {main_x1-22},{main_y-18} {main_x1-22},{main_y+18}" fill="#5a5a5f"/>')
+    # 步骤块尺寸
+    box_w, box_h = 220, 130
+    line_len = 90  # 斜线长度
+    # ===== 上方步骤(等距) =====
     if steps:
-        step_w = (main_x1 - main_x0) / (len(steps) + 1)
+        step_gap = (main_x1 - main_x0 - 80) / (len(steps) + 1)
         for i, st in enumerate(steps):
-            sx = main_x0 + step_w * (i + 1)
-            # 斜线向上到 title 位置
-            # title 位置: y = main_y - 130
-            tx = sx + 50  # 斜线右移一点
-            ty = main_y - 130
+            # 主轴上的连接点(等距)
+            anchor_x = main_x0 + 40 + step_gap * (i + 1)
+            # 倾斜 25° 朝右上
+            angle_deg = 25
+            # 文字块位置(以斜线终点为中心)
+            # 斜线终点 = (anchor_x + line_len * cos25, main_y - line_len * sin25)
+            import math
+            rad = math.radians(angle_deg)
+            line_end_x = anchor_x + line_len * math.cos(rad)
+            line_end_y = main_y - line_len * math.sin(rad)
+            # 文字块左上角
+            box_x = line_end_x
+            box_y = line_end_y - box_h  # 文字块底部与斜线终点齐
             # 斜线
-            parts.append(f'<line x1="{sx}" y1="{main_y}" x2="{tx}" y2="{ty}" stroke="#2997ff" stroke-width="2.5"/>')
-            # 圆点
-            parts.append(f'<circle cx="{sx}" cy="{main_y}" r="9" fill="#2997ff" stroke="#fff" stroke-width="2.5"/>')
-            # 编号 + 标题
-            title = html.escape(st["title"][:22])
-            parts.append(f'<text x="{tx+6}" y="{ty-8}" text-anchor="start" fill="#2997ff" font-size="14" font-weight="700" font-family="-apple-system,sans-serif">{i+1}. {title}</text>')
-            # body 文字
-            body = html.escape(st.get("body","")[:90])
-            parts.append(f'<text x="{tx+6}" y="{ty+12}" text-anchor="start" fill="#d2d2d7" font-size="11.5" font-weight="400" font-family="-apple-system,sans-serif">{body}</text>')
-    # 反模式 + 军规 节点(下方)
+            parts.append(f'<line x1="{anchor_x}" y1="{main_y}" x2="{line_end_x}" y2="{line_end_y}" stroke="#2997ff" stroke-width="2.5"/>')
+            # 主轴圆点
+            parts.append(f'<circle cx="{anchor_x}" cy="{main_y}" r="10" fill="#2997ff" stroke="#fff" stroke-width="2.5"/>')
+            # 文字块底色(微妙玻璃感)
+            parts.append(f'<rect x="{box_x}" y="{box_y}" width="{box_w}" height="{box_h}" rx="14" ry="14" fill="#2997ff" fill-opacity="0.06" stroke="#2997ff" stroke-opacity="0.25" stroke-width="1"/>')
+            # 编号(左上角徽章)
+            parts.append(f'<circle cx="{box_x+22}" cy="{box_y+22}" r="14" fill="#2997ff"/>')
+            parts.append(f'<text x="{box_x+22}" y="{box_y+27}" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">{i+1}</text>')
+            # 标题
+            title = html.escape(st["title"][:16])
+            parts.append(f'<text x="{box_x+44}" y="{box_y+27}" fill="#2997ff" font-size="15" font-weight="700">{title}</text>')
+            # body 多行
+            body_lines = wrap_text(st.get("body",""), max_chars=14)
+            y_offset = box_y + 52
+            for j, ln in enumerate(body_lines[:4]):
+                parts.append(f'<text x="{box_x+15}" y="{y_offset}" fill="#d2d2d7" font-size="13" font-weight="400">{html.escape(ln)}</text>')
+                y_offset += 18
+    # ===== 下方分支(反模式 + 军规) =====
     if bot:
-        bw = (main_x1 - main_x0) / (len(bot) + 1)
+        bot_gap = (main_x1 - main_x0 - 80) / (len(bot) + 1)
         for i, it in enumerate(bot):
-            sx = main_x0 + bw * (i + 1)
-            ty = main_y + 130
-            tx = sx - 50  # 斜线左移
+            anchor_x = main_x0 + 40 + bot_gap * (i + 1)
+            angle_deg = -25  # 朝右下
+            import math
+            rad = math.radians(-angle_deg)
+            line_end_x = anchor_x + line_len * math.cos(rad)
+            line_end_y = main_y + line_len * math.sin(rad)
+            box_x = line_end_x - box_w  # 文字块朝左,右边缘对齐斜线终点
+            box_y = line_end_y
             c = "#ff9f0a" if it["type"] == "army" else "#ff453a"
-            tag = "军规" if it["type"] == "army" else "反模式"
             # 斜线
-            parts.append(f'<line x1="{sx}" y1="{main_y}" x2="{tx}" y2="{ty}" stroke="{c}" stroke-width="2" stroke-dasharray="5 3"/>')
+            parts.append(f'<line x1="{anchor_x}" y1="{main_y}" x2="{line_end_x}" y2="{line_end_y}" stroke="{c}" stroke-width="2.5" stroke-dasharray="6 4"/>')
             # 圆点
-            parts.append(f'<circle cx="{sx}" cy="{main_y}" r="7" fill="{c}" stroke="#fff" stroke-width="2"/>')
-            # tag
-            parts.append(f'<text x="{tx-6}" y="{ty-8}" text-anchor="end" fill="{c}" font-size="13" font-weight="700" font-family="-apple-system,sans-serif">{tag}</text>')
-            # text
-            short = html.escape(it["short"])
-            parts.append(f'<text x="{tx-6}" y="{ty+12}" text-anchor="end" fill="#d2d2d7" font-size="11.5" font-weight="400" font-family="-apple-system,sans-serif">{short}</text>')
-    svg = '<svg id="fishSVG" viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto">' + "".join(parts) + "</svg>"
+            parts.append(f'<circle cx="{anchor_x}" cy="{main_y}" r="9" fill="{c}" stroke="#fff" stroke-width="2"/>')
+            # 文字块(半透明填色)
+            parts.append(f'<rect x="{box_x}" y="{box_y}" width="{box_w}" height="{box_h}" rx="14" ry="14" fill="{c}" fill-opacity="0.06" stroke="{c}" stroke-opacity="0.3" stroke-width="1"/>')
+            # tag 徽章(左上角)
+            tag_color = "#ff9f0a" if it["type"] == "army" else "#ff453a"
+            parts.append(f'<rect x="{box_x+15}" y="{box_y+12}" width="55" height="20" rx="6" fill="{tag_color}"/>')
+            parts.append(f'<text x="{box_x+42}" y="{box_y+27}" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">{html.escape(it["tag"])}</text>')
+            # body 多行
+            body_lines = wrap_text(it["short"], max_chars=14)
+            y_offset = box_y + 52
+            for j, ln in enumerate(body_lines[:4]):
+                parts.append(f'<text x="{box_x+15}" y="{y_offset}" fill="#d2d2d7" font-size="13" font-weight="400">{html.escape(ln)}</text>')
+                y_offset += 18
+    svg = f'<svg id="fishSVG" viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto">{"".join(parts)}</svg>'
     return svg
 
 
@@ -214,50 +274,94 @@ body{{color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Disp
 <script>
 var SOPS = {json.dumps(SOPS, ensure_ascii=False)};
 
-// JS 版 SVG 鱼骨图
+// JS 版 SVG 鱼骨图(完整单图,viewBox 1400x900)
 function fishboneSvg(sop, W, H){{
+  W = W || 1400; H = H || 900;
   var steps = sop.steps || [];
   var aps = sop.antipatterns || [];
   var rules = sop.keyrules || [];
   var bot = [];
-  aps.slice(0,3).forEach(function(a){{ bot.push({{type:'warn', short:a.slice(0,55)}}); }});
-  rules.slice(0,3).forEach(function(r){{ bot.push({{type:'army', short:r.slice(0,55)}}); }});
+  aps.slice(0,3).forEach(function(a){{ bot.push({{type:'warn', short:a, tag:'反模式'}}); }});
+  rules.slice(0,3).forEach(function(r){{ bot.push({{type:'army', short:r, tag:'军规'}}); }});
   var esc = function(s){{ return String(s||'').replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>'); }};
-  var mainY = H * 0.55;
-  var mainX0 = W * 0.05;
-  var mainX1 = W * 0.92;
+  // 文字换行
+  function wrapText(t, mc){{
+    t = String(t||'').trim();
+    if(t.length <= mc) return [t];
+    var lines = [];
+    while(t.length > mc){{
+      var cut = t.substring(0, mc);
+      var idx = -1;
+      for(var i=cut.length-1; i>=Math.max(0, cut.length-4); i--){{
+        if('，。、 ；:：?？!！ '.indexOf(cut[i]) >= 0){{ idx = i; break; }}
+      }}
+      if(idx >= 0) cut = t.substring(0, idx+1);
+      else cut = t.substring(0, mc);
+      lines.push(cut);
+      t = t.substring(cut.length);
+    }}
+    if(t) lines.push(t);
+    return lines;
+  }}
+  var mainY = H / 2;
+  var mL = 60, mR = 60;
+  var mainX0 = mL, mainX1 = W - mR;
   var parts = [];
-  parts.push('<line x1="'+mainX0+'" y1="'+mainY+'" x2="'+mainX1+'" y2="'+mainY+'" stroke="#48484a" stroke-width="3"/>');
-  parts.push('<polygon points="'+mainX1+','+mainY+' '+(mainX1-18)+','+(mainY-10)+' '+(mainX1-18)+','+(mainY+10)+'" fill="#48484a"/>');
-  parts.push('<text x="'+(mainX0-8)+'" y="'+(mainY+5)+'" text-anchor="end" fill="#86868b" font-size="13" font-weight="600" font-family="-apple-system,sans-serif">起点 →</text>');
+  parts.push('<line x1="'+mainX0+'" y1="'+mainY+'" x2="'+mainX1+'" y2="'+mainY+'" stroke="#5a5a5f" stroke-width="3"/>');
+  parts.push('<circle cx="'+mainX0+'" cy="'+mainY+'" r="11" fill="#5a5a5f" stroke="#fff" stroke-width="2.5"/>');
+  parts.push('<text x="'+(mainX0+18)+'" y="'+(mainY+6)+'" fill="#86868b" font-size="18" font-weight="600">起点</text>');
+  parts.push('<polygon points="'+(mainX1+5)+','+mainY+' '+(mainX1-22)+','+(mainY-18)+' '+(mainX1-22)+','+(mainY+18)+'" fill="#5a5a5f"/>');
+  var boxW = 220, boxH = 130;
+  var lineLen = 90;
+  function deg2rad(d){{ return d * Math.PI / 180; }}
+  // 上方步骤
   if(steps.length){{
-    var stepW = (mainX1 - mainX0) / (steps.length + 1);
+    var stepGap = (mainX1 - mainX0 - 80) / (steps.length + 1);
     for(var i=0; i<steps.length; i++){{
       var st = steps[i];
-      var sx = mainX0 + stepW*(i+1);
-      var tx = sx + 50;
-      var ty = mainY - 130;
-      parts.push('<line x1="'+sx+'" y1="'+mainY+'" x2="'+tx+'" y2="'+ty+'" stroke="#2997ff" stroke-width="2.5"/>');
-      parts.push('<circle cx="'+sx+'" cy="'+mainY+'" r="9" fill="#2997ff" stroke="#fff" stroke-width="2.5"/>');
-      var title = esc(st.title||'').slice(0,22);
-      parts.push('<text x="'+(tx+6)+'" y="'+(ty-8)+'" text-anchor="start" fill="#2997ff" font-size="14" font-weight="700" font-family="-apple-system,sans-serif">'+(i+1)+'. '+title+'</text>');
-      var body = esc(st.body||'').slice(0,90);
-      parts.push('<text x="'+(tx+6)+'" y="'+(ty+12)+'" text-anchor="start" fill="#d2d2d7" font-size="11.5" font-family="-apple-system,sans-serif">'+body+'</text>');
+      var anchorX = mainX0 + 40 + stepGap * (i + 1);
+      var rad = deg2rad(25);
+      var lineEndX = anchorX + lineLen * Math.cos(rad);
+      var lineEndY = mainY - lineLen * Math.sin(rad);
+      var boxX = lineEndX;
+      var boxY = lineEndY - boxH;
+      parts.push('<line x1="'+anchorX+'" y1="'+mainY+'" x2="'+lineEndX+'" y2="'+lineEndY+'" stroke="#2997ff" stroke-width="2.5"/>');
+      parts.push('<circle cx="'+anchorX+'" cy="'+mainY+'" r="10" fill="#2997ff" stroke="#fff" stroke-width="2.5"/>');
+      parts.push('<rect x="'+boxX+'" y="'+boxY+'" width="'+boxW+'" height="'+boxH+'" rx="14" ry="14" fill="#2997ff" fill-opacity="0.06" stroke="#2997ff" stroke-opacity="0.3" stroke-width="1"/>');
+      parts.push('<circle cx="'+(boxX+22)+'" cy="'+(boxY+22)+'" r="14" fill="#2997ff"/>');
+      parts.push('<text x="'+(boxX+22)+'" y="'+(boxY+27)+'" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">'+(i+1)+'</text>');
+      parts.push('<text x="'+(boxX+44)+'" y="'+(boxY+27)+'" fill="#2997ff" font-size="15" font-weight="700">'+esc(st.title||'').slice(0,16)+'</text>');
+      var bodyLines = wrapText(st.body||'', 14);
+      var yOff = boxY + 52;
+      for(var j=0; j<Math.min(bodyLines.length,4); j++){{
+        parts.push('<text x="'+(boxX+15)+'" y="'+yOff+'" fill="#d2d2d7" font-size="13" font-weight="400">'+esc(bodyLines[j])+'</text>');
+        yOff += 18;
+      }}
     }}
   }}
+  // 下方分支
   if(bot.length){{
-    var bw = (mainX1 - mainX0) / (bot.length + 1);
-    for(var j=0; j<bot.length; j++){{
-      var it = bot[j];
-      var sx = mainX0 + bw*(j+1);
-      var tx = sx - 50;
-      var ty = mainY + 130;
+    var botGap = (mainX1 - mainX0 - 80) / (bot.length + 1);
+    for(var i=0; i<bot.length; i++){{
+      var it = bot[i];
+      var anchorX = mainX0 + 40 + botGap * (i + 1);
+      var rad = deg2rad(25);
+      var lineEndX = anchorX + lineLen * Math.cos(rad);
+      var lineEndY = mainY + lineLen * Math.sin(rad);
+      var boxX = lineEndX - boxW;
+      var boxY = lineEndY;
       var c = it.type==='army' ? '#ff9f0a' : '#ff453a';
-      var tag = it.type==='army' ? '军规' : '反模式';
-      parts.push('<line x1="'+sx+'" y1="'+mainY+'" x2="'+tx+'" y2="'+ty+'" stroke="'+c+'" stroke-width="2" stroke-dasharray="5 3"/>');
-      parts.push('<circle cx="'+sx+'" cy="'+mainY+'" r="7" fill="'+c+'" stroke="#fff" stroke-width="2"/>');
-      parts.push('<text x="'+(tx-6)+'" y="'+(ty-8)+'" text-anchor="end" fill="'+c+'" font-size="13" font-weight="700" font-family="-apple-system,sans-serif">'+tag+'</text>');
-      parts.push('<text x="'+(tx-6)+'" y="'+(ty+12)+'" text-anchor="end" fill="#d2d2d7" font-size="11.5" font-family="-apple-system,sans-serif">'+esc(it.short)+'</text>');
+      parts.push('<line x1="'+anchorX+'" y1="'+mainY+'" x2="'+lineEndX+'" y2="'+lineEndY+'" stroke="'+c+'" stroke-width="2.5" stroke-dasharray="6 4"/>');
+      parts.push('<circle cx="'+anchorX+'" cy="'+mainY+'" r="9" fill="'+c+'" stroke="#fff" stroke-width="2"/>');
+      parts.push('<rect x="'+boxX+'" y="'+boxY+'" width="'+boxW+'" height="'+boxH+'" rx="14" ry="14" fill="'+c+'" fill-opacity="0.06" stroke="'+c+'" stroke-opacity="0.3" stroke-width="1"/>');
+      parts.push('<rect x="'+(boxX+15)+'" y="'+(boxY+12)+'" width="55" height="20" rx="6" fill="'+c+'"/>');
+      parts.push('<text x="'+(boxX+42)+'" y="'+(boxY+27)+'" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">'+it.tag+'</text>');
+      var bodyLines = wrapText(it.short||'', 14);
+      var yOff = boxY + 52;
+      for(var j=0; j<Math.min(bodyLines.length,4); j++){{
+        parts.push('<text x="'+(boxX+15)+'" y="'+yOff+'" fill="#d2d2d7" font-size="13" font-weight="400">'+esc(bodyLines[j])+'</text>');
+        yOff += 18;
+      }}
     }}
   }}
   return '<svg id="fishSVG" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto">'+parts.join('')+'</svg>';
@@ -290,11 +394,8 @@ function pick(n){{
   if(!sop) return;
   document.getElementById('fNum').textContent = 'SOP '+sop.num;
   document.getElementById('fTitle').textContent = sop.title.split('·')[1].trim();
-  // SVG 1:1: viewBox 宽高 = SVG 实际像素宽高
-  var container = document.getElementById('fishSvg');
-  var w = container.clientWidth || 800;
-  var h = Math.round(w * 440 / 800);
-  container.innerHTML = fishboneSvg(sop, w, h);
+  // viewBox 固定 1400x900,SVG 等比缩放
+  document.getElementById('fishSvg').innerHTML = fishboneSvg(sop, 1400, 900);
   document.getElementById('detail').innerHTML = detailHtml(sop);
   document.querySelectorAll('.chip').forEach(function(b){{ b.classList.toggle('act', b.dataset.n===sop.num); }});
 }}
@@ -303,24 +404,9 @@ document.querySelectorAll('.chip').forEach(function(b){{
   b.addEventListener('click', function(){{ pick(this.dataset.n); document.getElementById('detail').scrollIntoView({{behavior:'smooth',block:'start'}}); }});
 }});
 document.querySelector('.chip[data-n="1"]').classList.add('act');
-// 首次加载 1:1 缩放
-setTimeout(function(){{
-  var c = document.getElementById('fishSvg');
-  var w = c.clientWidth || 800;
-  var h = Math.round(w * 440 / 800);
-  c.innerHTML = fishboneSvg(SOPS[0], w, h);
-}}, 50);
-window.addEventListener('resize', function(){{
-  var c = document.getElementById('fishSvg');
-  var svg = c.querySelector('svg');
-  if(!svg) return;
-  var w = c.clientWidth;
-  var h = Math.round(w * 440 / 800);
-  // 当前 SOP 重画
-  var n = document.querySelector('.chip.act');
-  if(n) pick(n.dataset.n);
-  else {{ c.innerHTML = fishboneSvg(SOPS[0], w, h); }}
-}});
+// 首屏渲染鱼骨图(viewBox 固定 1400x900,等比缩放)
+document.getElementById('fishSvg').innerHTML = fishboneSvg(SOPS[0], 1400, 900);
+// resize 不重画,SVG 自动等比缩放
 </script>
 </body>
 </html>
