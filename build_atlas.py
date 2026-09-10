@@ -30,6 +30,33 @@ def heads(t, levels=(2, 3), pat=None):
     return out
 
 
+def after_heading(t, head, maxlen=200):
+    """取某标题行之后的头两行实质内容作为摘要(点节点时直接可读)"""
+    i = t.find(head)
+    if i < 0:
+        return ""
+    lines = t[i + len(head):].split("\n")[1:]
+    buf = []
+    for ln in lines:
+        s = ln.strip()
+        if not s:
+            if buf:
+                break
+            continue
+        if s.startswith("#"):
+            break
+        s = re.sub(r'^\s*[-*+>]\s*', '', s)
+        s = re.sub(r'^\s*\d+\.\s*', '', s)
+        s = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', s)
+        s = re.sub(r'\*\*|`|\*', '', s)
+        if s.startswith("|"):
+            continue
+        buf.append(s)
+        if sum(len(x) for x in buf) >= maxlen:
+            break
+    return " ".join(buf)[:maxlen]
+
+
 def first_para_after(t, heading_sub):
     """取某标题后第一段非空文本(作一句话说明)"""
     i = t.find(heading_sub)
@@ -111,9 +138,11 @@ def build_tree():
         seg = t39[start: start + (nxt.start() if nxt else 4000)]
         methods = []
         for mm in re.finditer(r'^###\s*方法\s*(\d+\.\d+)[：: ]*([^\n]*)', seg, re.M):
-            methods.append({"id": f"39-{mm.group(1)}", "label": f"{mm.group(1)} {mm.group(2).strip()}"[:60],
+            mnum = mm.group(1)
+            methods.append({"id": f"39-{mnum}", "label": f"{mnum} {mm.group(2).strip()}"[:60],
                             "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md",
-                            "anchor": f"方法 {mm.group(1)}"})
+                            "anchor": f"方法 {mnum}",
+                            "desc": after_heading(t39, f"方法 {mnum}")})
         cat_nodes.append({"id": "39-" + cat[:4], "label": cat[:44], "type": "cat39",
                           "desc": f"{len(methods)} 条方法", "children": methods})
 
@@ -121,7 +150,9 @@ def build_tree():
     gap_nodes = []
     for m in re.finditer(r'^#{1,6}\s*#?\s*([ABC]\d)\.\s*([^\n]+)$', t40, re.M):
         gap_nodes.append({"id": "40-" + m.group(1), "label": f"{m.group(1)} {m.group(2).strip()}"[:70],
-                          "type": "gap", "desc": "", "file": "成长系统/40_514视频补缺方法论_v1.md",
+                          "type": "gap",
+                          "desc": after_heading(t40, f"{m.group(1)}. {m.group(2).strip()}"),
+                          "file": "成长系统/40_514视频补缺方法论_v1.md",
                           "anchor": m.group(1)})
 
     # 09 阶段
@@ -144,14 +175,40 @@ def build_tree():
             m = re.search(r'^title:\s*(.+)$', t, re.M)
             title = m.group(1).strip().strip("'\"") if m else f[:-3]
             rel = os.path.relpath(fp, VAULT)
+            body = re.sub(r'^---[\s\S]*?\n---\n', '', t)
+            summ = ""
+            for ln in body.split("\n"):
+                s = ln.strip()
+                if not s or s.startswith(("#", "|", ">", "```")):
+                    continue
+                s = re.sub(r'^\s*[-*+]\s*', '', s)
+                s = re.sub(r'\*\*|`', '', s)
+                if len(s) > 12:
+                    summ = s[:180]
+                    break
             fcards.setdefault(dom, []).append({"id": "f-" + f[:-3], "label": title[:60],
-                                               "type": "fcard", "desc": f[:-3], "file": rel})
+                                               "type": "fcard", "desc": summ, "file": rel})
     # 决策卡
     dcards = []
     for f in sorted(os.listdir(os.path.join(VAULT, "cards"))):
         if f.endswith(".md"):
-            dcards.append({"id": "d-" + f[:-3], "label": f[:-3], "type": "dcard",
-                           "desc": "可直接对客户谈的决策卡", "file": "cards/" + f})
+            if f.startswith("index") or f.startswith("_"):
+                continue
+            ct = open(os.path.join(VAULT, "cards", f), encoding="utf-8", errors="replace").read()
+            cbody = re.sub(r'^---[\s\S]*?\n---\n', '', ct)
+            csum, cm = "", re.search(r'^#\s*([^\n]+)$', cbody, re.M)
+            clabel = cm.group(1).strip() if cm else f[:-3]
+            for ln in cbody.split("\n"):
+                s = ln.strip()
+                if not s or s.startswith(("#", "|", ">", "```")):
+                    continue
+                s = re.sub(r'^\s*[-*+]\s*', '', s)
+                s = re.sub(r'\*\*|`', '', s)
+                if len(s) > 12:
+                    csum = s[:180]
+                    break
+            dcards.append({"id": "d-" + f[:-3], "label": clabel[:50], "type": "dcard",
+                           "desc": csum, "file": "cards/" + f})
 
     # 素材池 (videos / clusters 从 panel 的 json 读)
     panel = os.path.expanduser("~/growth-system-panel")
