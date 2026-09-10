@@ -5,111 +5,176 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>企业AI落地 · 全景知识树</title>
 <style>
-:root{--bg:#0a0b0e;--panel:#12141a;--panel2:#191c23;--line:#262a33;--txt:#eef1f6;--dim:#98a1b0;--dim2:#666e7d;
---blue:#5b93ff;--cyan:#37d3e6;--green:#3fd68c;--amber:#f5b544;--red:#ff6b6b;--violet:#a78bfa;--pink:#f472b6}
-*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000;
+  --glass:rgba(28,28,30,.72);
+  --panel:rgba(28,28,30,.88);
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.14);
+  --txt:#f5f5f7;--dim:#a1a1a6;--dim2:#6e6e73;
+  --blue:#0a84ff;--blue2:#409cff;--blueSoft:rgba(10,132,255,.16);
+  --green:#30d158;--orange:#ff9f0a;--purple:#bf5af2;--teal:#40c8e0;--pink:#ff375f;
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","SF Pro Display",sans-serif;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--txt);letter-spacing:.005em;
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","PingFang SC","Helvetica Neue",sans-serif;
+ -webkit-font-smoothing:antialiased}
 #app{display:flex;flex-direction:column;height:100%}
-/* topbar */
-#bar{height:54px;flex:0 0 54px;display:flex;align-items:center;gap:12px;padding:0 14px;background:rgba(18,20,26,.92);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);z-index:20}
-#bar .logo{font-size:14.5px;font-weight:700;white-space:nowrap}
-#bar .logo span{color:var(--blue)}
-#q{width:230px;height:32px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:0 11px;font-size:12.5px;outline:none}
-#q:focus{border-color:var(--blue)}
-.btn{height:32px;padding:0 11px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-size:12.5px;cursor:pointer;white-space:nowrap;transition:.15s}
-.btn:hover{background:#20242d;color:var(--txt);border-color:#39404d}
-.btn.act{background:rgba(91,147,255,.16);color:#a9c7ff;border-color:rgba(91,147,255,.42)}
-#hint{margin-left:auto;font-size:11.5px;color:var(--dim2);white-space:nowrap}
-/* main */
-#main{flex:1;display:flex;min-height:0}
+/* ── 顶栏: 毛玻璃 ── */
+#bar{height:52px;flex:0 0 52px;display:flex;align-items:center;gap:9px;padding:0 16px;
+ background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+ border-bottom:1px solid var(--line);z-index:20;position:relative}
+#bar .logo{font-size:14px;font-weight:600;letter-spacing:-.012em;white-space:nowrap}
+#bar .logo span{color:var(--dim);font-weight:500}
+#q{width:216px;height:31px;background:rgba(255,255,255,.06);border:1px solid transparent;border-radius:9px;
+ color:var(--txt);padding:0 11px;font-size:13px;outline:none;font-family:inherit;transition:.2s var(--ease)}
+#q::placeholder{color:var(--dim2)}
+#q:focus{background:rgba(255,255,255,.1);border-color:var(--blue);box-shadow:0 0 0 3px var(--blueSoft)}
+.btn{height:31px;padding:0 12px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid transparent;
+ color:var(--dim);font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit;
+ transition:background .18s var(--ease),color .18s var(--ease),transform .12s var(--ease)}
+.btn:hover{background:rgba(255,255,255,.11);color:var(--txt)}
+.btn:active{transform:scale(.96)}
+.btn.act{background:var(--blueSoft);color:var(--blue2);box-shadow:inset 0 0 0 1px rgba(10,132,255,.32)}
+#hint{margin-left:auto;font-size:11.5px;color:var(--dim2);white-space:nowrap;font-weight:500}
+/* ── 画布 ── */
+#main{flex:1;display:flex;min-height:0;position:relative}
 #canvas{flex:1;position:relative;overflow:hidden;cursor:grab;background:
-  radial-gradient(900px 500px at 15% 0%,rgba(91,147,255,.07),transparent 65%),
-  radial-gradient(800px 600px at 85% 100%,rgba(167,139,250,.06),transparent 65%),var(--bg)}
+ radial-gradient(1000px 620px at 18% -12%,rgba(10,132,255,.085),transparent 62%),
+ radial-gradient(900px 700px at 92% 112%,rgba(191,90,242,.06),transparent 62%),var(--bg)}
 #canvas.drag{cursor:grabbing}
-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.link{fill:none;stroke:#2c313c;stroke-width:1.4}
-.link.hi{stroke:rgba(91,147,255,.75);stroke-width:2}
+svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.link{fill:none;stroke:rgba(255,255,255,.1);stroke-width:1.2}
+.link.hi{stroke:rgba(10,132,255,.62);stroke-width:2}
 .node{cursor:pointer}
-.node .box{fill:#171a21;stroke:#333a47;stroke-width:1.2;rx:8}
-.node:hover .box{fill:#1e222b;stroke:#4a5464}
-.node.sel .box{fill:#1d2739;stroke:var(--blue);stroke-width:2}
-.node .lab{fill:#dfe5ee;font-size:12px;font-family:inherit;pointer-events:none;user-select:none}
-.node .sub{fill:#7c8798;font-size:10px;pointer-events:none;user-select:none;font-family:inherit}
-.node .tgl{fill:#2b3140;stroke:#454e5e;stroke-width:1;rx:3}
-.node .tgl:hover{fill:#3a4356}
-.node .tsig{fill:#cbd5e3;font-size:11px;pointer-events:none;user-select:none;text-anchor:middle;font-family:inherit}
-.node.dim{opacity:.22}
-.node.hit .box{stroke:var(--amber);stroke-width:2.2}
-.n-root .box{fill:#1b2votes}
-.n-root .box{fill:#1b2333;stroke:var(--blue);stroke-width:2}
-.n-branch .box{fill:#182231;stroke:#3a4f70}
-.n-stage .box{fill:#1a2130;stroke:#48608c}
-.n-doc .box{fill:#18251f;stroke:#356b52}
-.n-sop .box{fill:#182130;stroke:#3f5f8c}
-.n-method .box{fill:#1a1f2c;stroke:#3c4658}
-.n-gap .box{fill:#241d16;stroke:#8a6a2e}
-.n-fcard .box{fill:#1b2430;stroke:#3b5a7d}
-.n-dcard .box{fill:#241a28;stroke:#7a4a86}
-.n-pool .box{fill:#151d24;stroke:#2f4a55}
-.n-video .box,.n-cluster .box{fill:#151d24;stroke:#2f4a55}
-.n-rule .box{fill:#1d1b28;stroke:#5b4a86}
-.n-gate .box{fill:#241d16;stroke:#8a6a2e}
-.n-dom .box,.n-cat39 .box{fill:#1a1c22;stroke:#3a404d}
-/* right panel */
-#side{width:0;flex:0 0 0;background:var(--panel);border-left:1px solid var(--line);overflow:hidden;transition:flex-basis .2s,width .2s;display:flex;flex-direction:column}
-#side.on{width:400px;flex:0 0 400px}
-#side .hd{padding:14px 16px;border-bottom:1px solid var(--line);flex:0 0 auto}
-#side .badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.09em;padding:3px 8px;border-radius:999px;background:rgba(91,147,255,.14);color:#a9c7ff;margin-bottom:8px}
-#side h2{font-size:16px;line-height:1.4;word-break:break-word}
-#side .bd{padding:16px;overflow-y:auto;flex:1;font-size:13.2px;line-height:1.75}
-#side .bd p{color:#cdd5e0;margin-bottom:12px}
-#side .kv{font-size:11.5px;color:var(--dim2);margin-bottom:6px}
-#side .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-#side .act{font-size:12.5px;padding:8px 12px;border-radius:9px;background:rgba(91,147,255,.14);border:1px solid rgba(91,147,255,.36);color:#a9c7ff;cursor:pointer}
-#side .act:hover{background:rgba(91,147,255,.22)}
-#side .children{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
-#side .children .t{font-size:11.5px;color:var(--dim2);letter-spacing:.08em;margin-bottom:8px}
-#side .chip{display:inline-block;font-size:12px;padding:5px 10px;margin:0 6px 6px 0;border-radius:8px;background:var(--panel2);border:1px solid var(--line);cursor:pointer;color:#c8d1de}
-#side .chip:hover{border-color:var(--blue);color:#fff}
-/* modal */
-#modal{position:fixed;inset:0;background:rgba(5,6,9,.82);backdrop-filter:blur(6px);z-index:60;display:none;padding:40px 20px}
+.node .box{fill:rgba(255,255,255,.055);stroke:rgba(255,255,255,.1);stroke-width:1;rx:11;
+ transition:fill .18s var(--ease),stroke .18s var(--ease)}
+.node:hover .box{fill:rgba(255,255,255,.1);stroke:rgba(255,255,255,.22)}
+.node.sel .box{fill:rgba(10,132,255,.18);stroke:var(--blue);stroke-width:1.5}
+.node.dim{opacity:.16}
+.node.hit .box{stroke:var(--orange);stroke-width:2}
+.node .lab{fill:#f0f0f2;font-size:12.5px;font-weight:500;font-family:inherit;pointer-events:none;user-select:none}
+.node .sub{fill:var(--dim2);font-size:10.5px;pointer-events:none;user-select:none;font-family:inherit}
+.node .acc{pointer-events:none}
+.node .tgl{fill:rgba(255,255,255,.09);rx:5;cursor:pointer;transition:fill .18s var(--ease)}
+.node .tgl:hover{fill:rgba(255,255,255,.22)}
+.node .tsig{fill:#c7c7cc;font-size:11px;font-weight:600;pointer-events:none;user-select:none;text-anchor:middle;font-family:inherit}
+.n-root .box{fill:rgba(10,132,255,.16);stroke:rgba(10,132,255,.5)}
+/* ── 侧栏: 毛玻璃 ── */
+#side{width:0;flex:0 0 0;background:var(--panel);-webkit-backdrop-filter:saturate(180%) blur(24px);
+ backdrop-filter:saturate(180%) blur(24px);border-left:1px solid var(--line);overflow:hidden;z-index:15;
+ transition:flex-basis .32s var(--ease),width .32s var(--ease);display:flex;flex-direction:column}
+#side.on{width:392px;flex:0 0 392px}
+#side .hd{padding:18px 20px 14px;border-bottom:1px solid var(--line);flex:0 0 auto}
+#side .badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 9px;border-radius:999px;
+ background:rgba(255,255,255,.08);color:var(--dim);margin-bottom:10px}
+#side h2{font-size:16.5px;line-height:1.42;font-weight:600;letter-spacing:-.015em;word-break:break-word}
+#side .bd{padding:18px 20px 26px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+#side .bd p{color:#d6d6da;margin-bottom:14px;font-size:13.5px;line-height:1.78}
+#side .kv{font-size:11.5px;color:var(--dim2);margin-bottom:8px;word-break:break-all;line-height:1.6}
+#side .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+#side .act{font-size:13px;font-weight:500;padding:9px 14px;border-radius:10px;background:var(--blue);color:#fff;
+ border:none;cursor:pointer;font-family:inherit;transition:.18s var(--ease);box-shadow:0 1px 3px rgba(0,0,0,.35)}
+#side .act:hover{background:#0a76e6}
+#side .act:active{transform:scale(.97)}
+#side .children{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}
+#side .children .t{font-size:11px;color:var(--dim2);font-weight:600;letter-spacing:.06em;margin-bottom:10px}
+#side .chip{display:inline-block;font-size:12.5px;padding:6px 11px;margin:0 6px 6px 0;border-radius:9px;
+ background:rgba(255,255,255,.07);border:1px solid transparent;cursor:pointer;color:#d0d0d5;font-family:inherit;
+ transition:.18s var(--ease)}
+#side .chip:hover{background:rgba(255,255,255,.13);color:#fff;border-color:var(--line2)}
+#sideMask{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:14;display:none}
+#sideMask.on{display:block}
+/* ── 原文弹层: iOS sheet ── */
+#modal{position:fixed;inset:0;z-index:60;display:none;padding:44px 24px 24px;
+ background:rgba(0,0,0,.62);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);
+ animation:fadeIn .22s var(--ease)}
 #modal.on{display:flex;align-items:flex-start;justify-content:center}
-#mwrap{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:900px;width:100%;max-height:calc(100vh - 80px);display:flex;flex-direction:column;overflow:hidden}
-#mhd{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex:0 0 auto}
-#mhd .t{font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#mbd{padding:22px 26px;overflow-y:auto;font-size:13.6px;line-height:1.85;color:#dfe5ee}
-#mbd h1{font-size:20px;margin:6px 0 14px;border-bottom:1px solid var(--line);padding-bottom:10px}
-#mbd h2{font-size:16.5px;margin:22px 0 10px;color:#cddcff}
-#mbd h3{font-size:14.5px;margin:16px 0 8px;color:#bcd0f5}
-#mbd p{margin-bottom:11px}
-#mbd ul,#mbd ol{margin:0 0 12px 22px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes sheetUp{from{opacity:0;transform:translateY(16px) scale(.99)}to{opacity:1;transform:none}}
+#mwrap{background:#1c1c1e;border:1px solid var(--line2);border-radius:18px;max-width:880px;width:100%;
+ max-height:calc(100vh - 68px);display:flex;flex-direction:column;overflow:hidden;
+ box-shadow:0 26px 74px rgba(0,0,0,.62);animation:sheetUp .3s var(--ease)}
+#mhd{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex:0 0 auto;
+ background:rgba(28,28,30,.94);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+ position:sticky;top:0;z-index:3}
+#mhd .t{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dim)}
+#mback{display:flex;align-items:center;gap:5px;height:32px;padding:0 14px 0 11px;border-radius:9px;border:none;
+ background:var(--blueSoft);color:var(--blue2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;
+ transition:.18s var(--ease);white-space:nowrap}
+#mback:hover{background:rgba(10,132,255,.28)}
+#mback:active{transform:scale(.96)}
+#mbd{padding:26px 30px 44px;overflow-y:auto;font-size:14px;line-height:1.82;color:#e2e2e6;-webkit-overflow-scrolling:touch}
+#mbd h1{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:4px 0 16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+#mbd h2{font-size:17px;font-weight:600;letter-spacing:-.012em;margin:26px 0 11px;color:#eef2ff}
+#mbd h3{font-size:15px;font-weight:600;margin:19px 0 9px;color:#dbe4f7}
+#mbd h4{font-size:14px;font-weight:600;margin:15px 0 7px;color:#cdd7ec}
+#mbd p{margin-bottom:12px}
+#mbd ul,#mbd ol{margin:0 0 13px 22px}
 #mbd li{margin-bottom:6px}
-#mbd table{width:100%;border-collapse:collapse;font-size:12.6px;margin:12px 0}
-#mbd th{background:var(--panel2);text-align:left;padding:8px 9px;color:var(--dim);font-size:11.5px;border-bottom:1px solid var(--line)}
-#mbd td{padding:8px 9px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
-#mbd code{background:rgba(255,255,255,.08);padding:1.5px 6px;border-radius:5px;font-size:12px}
-#mbd pre{background:#0d0f13;border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto;margin:12px 0;font-size:12px}
-#mbd blockquote{border-left:3px solid var(--blue);padding:4px 0 4px 12px;color:var(--dim);margin:12px 0}
-#mbd hr{border:none;border-top:1px solid var(--line);margin:18px 0}
-#mbd a{color:var(--blue)}
-/* legend */
-#leg{position:absolute;left:14px;bottom:14px;background:rgba(18,20,26,.9);border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:11.2px;color:var(--dim);line-height:1.9;z-index:10;backdrop-filter:blur(8px)}
-#leg b{color:#dfe5ee;font-weight:600}
-#leg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:middle}
-#zoomctl{position:absolute;right:14px;bottom:14px;display:flex;gap:7px;z-index:10}
-@media(max-width:900px){#side.on{width:100%;flex:0 0 100%;position:absolute;right:0;top:54px;bottom:0;z-index:15}#q{width:130px}}
+#mbd table{width:100%;border-collapse:collapse;font-size:12.8px;margin:14px 0;
+ border:1px solid var(--line);border-radius:10px;overflow:hidden}
+#mbd th{background:rgba(255,255,255,.05);text-align:left;padding:9px 10px;color:var(--dim);font-size:11.5px;
+ font-weight:600;border-bottom:1px solid var(--line)}
+#mbd td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.045);vertical-align:top}
+#mbd code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:5px;font-size:12.2px}
+#mbd pre{background:#141416;border:1px solid var(--line);border-radius:11px;padding:13px;overflow-x:auto;
+ margin:13px 0;font-size:12.2px}
+#mbd blockquote{border-left:3px solid var(--blue);padding:3px 0 3px 13px;color:var(--dim);margin:13px 0}
+#mbd hr{border:none;border-top:1px solid var(--line);margin:20px 0}
+#mbd a{color:var(--blue2)}
+/* ── 图例 / 缩放 ── */
+#leg{position:absolute;left:16px;bottom:16px;background:rgba(28,28,30,.74);-webkit-backdrop-filter:blur(20px) saturate(180%);
+ backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--line);border-radius:14px;padding:12px 14px;
+ font-size:11.5px;color:var(--dim);line-height:2;z-index:10}
+#leg b{color:#e8e8ea;font-weight:600;font-size:11px;letter-spacing:.05em}
+#leg i{display:inline-block;width:8px;height:8px;border-radius:2.5px;margin-right:7px;vertical-align:middle}
+#zoomctl{position:absolute;right:16px;bottom:16px;display:flex;gap:8px;z-index:10}
+#zoomctl .btn{width:36px;height:36px;padding:0;font-size:16px;border-radius:11px;
+ background:rgba(28,28,30,.8);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+ border:1px solid var(--line);color:var(--dim)}
+#zoomctl .btn:hover{background:rgba(58,58,62,.92);color:#fff}
+/* ── 手机 / 平板 ── */
+@media(max-width:900px){
+  #bar{height:auto;flex:0 0 auto;flex-wrap:wrap;padding:9px 12px;gap:8px}
+  #bar .logo{font-size:13px;order:1;flex:1}
+  #hint{display:none}
+  .btn{height:32px;padding:0 11px;font-size:12.5px;order:2}
+  #q{order:3;width:100%;height:35px;font-size:15px}
+  #leg{display:none}
+  #zoomctl{right:12px;bottom:12px}
+  #zoomctl .btn{width:40px;height:40px;font-size:18px}
+  #side{position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;flex:none;height:auto;max-height:68vh;
+   border-left:none;border-top:1px solid var(--line);border-radius:20px 20px 0 0;transform:translateY(103%);
+   transition:transform .34s var(--ease);box-shadow:0 -14px 54px rgba(0,0,0,.58)}
+  #side.on{width:100%;flex:none;transform:translateY(0)}
+  #side .hd{padding:10px 18px 12px}
+  #side .hd::before{content:"";display:block;width:38px;height:4px;border-radius:2px;
+   background:rgba(255,255,255,.22);margin:0 auto 12px}
+  #side .bd{padding:14px 18px 34px}
+  #modal{padding:0}
+  #mwrap{max-width:100%;height:100%;max-height:100%;border-radius:0;border:none}
+  #mhd{padding:9px 12px}
+  #mback{height:42px;padding:0 17px 0 13px;font-size:14.5px;border-radius:11px}
+  #mhd .t{display:none}
+  #mbd{padding:20px 18px 70px;font-size:15px;line-height:1.85}
+  #mbd h1{font-size:19px}
+  #mbd h2{font-size:16.5px}
+  #mbd table{font-size:12.5px}
+}
 </style>
 </head>
 <body>
 <div id="app">
   <div id="bar">
-    <div class="logo">🧭 企业AI落地 · <span>全景知识树</span></div>
-    <input id="q" placeholder="搜节点：SOP / 报价 / 门禁…" autocomplete="off">
-    <button class="btn" id="bExpand">展开全部</button>
-    <button class="btn" id="bCollapse">收起全部</button>
-    <button class="btn" id="bFit">适应屏幕</button>
-    <button class="btn" id="bD3" title="切到三层视角">三层视角</button>
+    <div class="logo">🧭 全景知识树 <span>企业AI落地</span></div>
+    <input id="q" placeholder="搜索节点…" autocomplete="off">
+    <button class="btn" id="bExpand">展开</button>
+    <button class="btn" id="bCollapse">收起</button>
+    <button class="btn" id="bFit">适应</button>
+    <button class="btn" id="bD3">三层</button>
     <div id="hint">滚轮缩放 · 拖拽平移 · 点节点看内容</div>
   </div>
   <div id="main">
@@ -121,6 +186,7 @@ svg{position:absolute;inset:0;width:100%;height:100%;display:block}
         <button class="btn" id="bOut">－</button>
       </div>
     </div>
+    <div id="sideMask"></div>
     <div id="side">
       <div class="hd"><div class="badge" id="sBadge">节点</div><h2 id="sTitle">—</h2></div>
       <div class="bd">
@@ -133,15 +199,15 @@ svg{position:absolute;inset:0;width:100%;height:100%;display:block}
   </div>
 </div>
 <div id="modal"><div id="mwrap">
-  <div id="mhd"><div class="t" id="mtitle">原文</div><button class="btn" id="mclose">关闭</button></div>
+  <div id="mhd"><button id="mback">‹ 返回</button><div class="t" id="mtitle">原文</div></div>
   <div id="mbd"></div>
 </div></div>
 
 <script>
 var DATA = {"id": "root", "label": "企业 AI 落地 · 全景知识树", "type": "root", "desc": "点任意节点看内容；滚轮缩放、拖拽平移；节点左侧 ▸ 可展开收起", "children": [{"id": "A", "label": "A 落地主轴（7 阶段）", "type": "branch", "desc": "从接客户到规模化的完整落地路径；每阶段 = 业务在干什么 × 工程在干什么 × 权威依据 × 库内武器", "children": [{"id": "阶段 1", "label": "阶段 1 接客户 / 需求澄清", "type": "stage", "badge": "Discover", "desc": "先杀错误问题：PSF 三关（痛点/经济性/可行性）；把「想上 AI」翻译成具体的人+事", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 1", "children": [{"id": "阶段 1-biz", "label": "业务在干什么（09 · 34轨A）", "type": "leaf", "desc": "先杀错误问题：PSF 三关（痛点/经济性/可行性）；把「想上 AI」翻译成具体的人+事", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 1"}, {"id": "阶段 1-eng", "label": "工程在干什么（25 · 34轨B）", "type": "leaf", "desc": "Discover + 需求门 G1（价值假设可证伪、KPI 可量化、客户签字）", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "Discover"}, {"id": "阶段 1-src", "label": "权威依据（34轨C · 调研2）", "type": "leaf", "desc": "OpenAI「solve a specific problem」· MIT 95% 失败率 · TOGAF ADM", "file": "成长系统/34_企业AI落地全景地图_工作台.md"}, {"id": "阶段 1-gun", "label": "库内武器（4 件）", "type": "leaf", "desc": "38 SOP-1 PSF三关 · REQ-001 需求工程 · 39 方法1.6 反AI幻觉清单 · requirement-clarifier"}]}, {"id": "阶段 2", "label": "阶段 2 技术选型 / 方案设计", "type": "stage", "badge": "Design+Architect", "desc": "定载体与档位：本地/云/混合；按客户成熟度选档（启航包→工作站→近企业）", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 2", "children": [{"id": "阶段 2-biz", "label": "业务在干什么（09 · 34轨A）", "type": "leaf", "desc": "定载体与档位：本地/云/混合；按客户成熟度选档（启航包→工作站→近企业）", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 2"}, {"id": "阶段 2-eng", "label": "工程在干什么（25 · 34轨B）", "type": "leaf", "desc": "Design + Architect：方案门 G2（ADR+C4图）· 载体门 G3（决策树+合规预审）", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "Design"}, {"id": "阶段 2-src", "label": "权威依据（34轨C · 调研2）", "type": "leaf", "desc": "三云厂 Well-Architected · TOGAF B/C/D · Gartner 5 级成熟度", "file": "成长系统/34_企业AI落地全景地图_工作台.md"}, {"id": "阶段 2-gun", "label": "库内武器（5 件）", "type": "leaf", "desc": "25 阶段2-3 · 23 交付载体怎么选 · ECO-001 生态与工具 · 决策卡 7 张 · AR-001 架构决策框架"}]}, {"id": "阶段 3", "label": "阶段 3 MVP / 试点", "type": "stage", "badge": "Data+Eval+Build+Test", "desc": "用周级节奏在客户真环境证明价值（MVD）；不做「概念验证坟墓」", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 3", "children": [{"id": "阶段 3-biz", "label": "业务在干什么（09 · 34轨A）", "type": "leaf", "desc": "用周级节奏在客户真环境证明价值（MVD）；不做「概念验证坟墓」", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 3"}, {"id": "阶段 3-eng", "label": "工程在干什么（25 · 34轨B）", "type": "leaf", "desc": "Data+Eval+Build+Test：数据门 G4（PII 脱敏）· 评测门 G5（≥5 维度+基线）", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "Data"}, {"id": "阶段 3-src", "label": "权威依据（34轨C · 调研2）", "type": "leaf", "desc": "OpenAI「deliver early value」· PMBOK 评估 · ISO 42001 · 12-Factor", "file": "成长系统/34_企业AI落地全景地图_工作台.md"}, {"id": "阶段 3-gun", "label": "库内武器（5 件）", "type": "leaf", "desc": "38 SOP-2 MVD · POC-001 POC与MVP验证 · EVAL-001 效果评估 · EVAL-004 评测集与偏见审计 · 39 方法1.2 驻场轻量交付五步"}]}, {"id": "阶段 4", "label": "阶段 4 交付部署 / 上线", "type": "stage", "badge": "Deploy+Accept", "desc": "企业集成 + 受控试用 → 全面上线；客户团队真的用起来才算完", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 4", "children": [{"id": "阶段 4-biz", "label": "业务在干什么（09 · 34轨A）", "type": "leaf", "desc": "企业集成 + 受控试用 → 全面上线；客户团队真的用起来才算完", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 4"}, {"id": "阶段 4-eng", "label": "工程在干什么（25 · 34轨B）", "type": "leaf", "desc": "Deploy + Accept：发布策略（G7 上线门 4 票）· 验收门 G8（UAT+文档+资产移交）", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "Deploy"}, {"id": "阶段 4-src", "label": "权威依据（34轨C · 调研2）", "type": "leaf", "desc": "三云厂发布策略 · ISO 审计 · Anthropic「codify patterns」", "file": "成长系统/34_企业AI落地全景地图_工作台.md"}, {"id": "阶段 4-gun", "label": "库内武器（4 件）", "type": "leaf", "desc": "25 阶段8-9 · REL-001 可靠性与自愈 · 38 SOP-5 热修复文化 · 14 装机手册"}]}, {"id": "阶段 5", "label": "阶段 5 质量保障 / 持续稳定", "type": "stage", "badge": "Operate", "desc": "持续可见指标 = 续约的筹码（NDR）；出问题按小时计修复", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 5", "children": [{"id": "阶段 5-biz", "label": "业务在干什么（09 · 34轨A）", "type": "leaf", "desc": "持续可见指标 = 续约的筹码（NDR）；出问题按小时计修复", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 5"}, {"id": "阶段 5-eng", "label": "工程在干什么（25 · 34轨B）", "type": "leaf", "desc": "Operate：运营卓越 · 监控告警 · 门禁复核", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "Operate"}, {"id": "阶段 5-src", "label": "权威依据（34轨C · 调研2）", "type": "leaf", "desc": "Palantir NDR 139% · 三云厂运营卓越 · Gartner AI TRiSM", "file": "成长系统/34_企业AI落地全景地图_工作台.md"}, {"id": "阶段 5-gun", "label": "库内武器（4 件）", "type": "leaf", "desc": "25 阶段10 · CRISIS-001 危机管理 · 34 轨C TRiSM 五支柱 · SALES-002 获客实战手册"}]}, {"id": "阶段 6", "label": "阶段 6 运营 / 续约 / 客户成功", "type": "stage", "badge": "Iterate", "desc": "用双段 ROI 证明价值 → 续约 → 横扩 BU/场景（把生意做大）", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 6", "children": [{"id": "阶段 6-biz", "label": "业务在干什么（09 · 34轨A）", "type": "leaf", "desc": "用双段 ROI 证明价值 → 续约 → 横扩 BU/场景（把生意做大）", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 6"}, {"id": "阶段 6-eng", "label": "工程在干什么（25 · 34轨B）", "type": "leaf", "desc": "Iterate：模型漂移监控 · 再训练 · 持续改进（ISO Clause 10）", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "Iterate"}, {"id": "阶段 6-src", "label": "权威依据（34轨C · 调研2）", "type": "leaf", "desc": "McKinsey 双段 ROI · ISO Clause 10 持续改进 · ML Lens 漂移监控", "file": "成长系统/34_企业AI落地全景地图_工作台.md"}, {"id": "阶段 6-gun", "label": "库内武器（4 件）", "type": "leaf", "desc": "MLOPS-001 模型运维与漂移监控 · ITER-001 反馈闭环 · RESULT-001 按结果付费 · 38 SOP-7 灯塔筛选"}]}, {"id": "阶段 7", "label": "阶段 7 复盘沉淀 / 规模化", "type": "stage", "badge": "Retire+Loop", "desc": "经验资产化：一个打法服务 N 客户（从 1 到 N 的飞轮）", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 7", "children": [{"id": "阶段 7-biz", "label": "业务在干什么（09 · 34轨A）", "type": "leaf", "desc": "经验资产化：一个打法服务 N 客户（从 1 到 N 的飞轮）", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 7"}, {"id": "阶段 7-eng", "label": "工程在干什么（25 · 34轨B）", "type": "leaf", "desc": "Retire（G9 退役门：数据/模型/凭据清理+合规证明）+ 现场反馈环反哺平台", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "Retire"}, {"id": "阶段 7-src", "label": "权威依据（34轨C · 调研2）", "type": "leaf", "desc": "Anthropic「team can own」· TOGAF H 变更管理 · ISO 模型退役", "file": "成长系统/34_企业AI落地全景地图_工作台.md"}, {"id": "阶段 7-gun", "label": "库内武器（4 件）", "type": "leaf", "desc": "38 SOP-8 经验资产化 · RETIRE-001 退役合规清单 · 复盘区 28+ 篇 · 41 方法论三件套"}]}]}, {"id": "B", "label": "B 方法论四件套（本轮提炼）", "type": "branch", "desc": "把 1000+ 素材变成能指导工作的东西：38 流程 SOP / 39 实战招式 / 40 补缺 / 41 MECE 汇总", "children": [{"id": "38", "label": "38 FDE 全流程可指导方法论（8 条 SOP）", "type": "doc", "desc": "从 0 到 1 做 AI 项目的全流程：每条含 问题→步骤→产出物→坑→适配→出处", "file": "成长系统/38_FDE全流程可指导方法论_v1.md", "children": [{"id": "38-sop1", "label": "PSF 三关：在立项阶段把「值得做」挑出来", "type": "sop", "desc": "1. 第一关 · 痛点检验：必须同时满足「具体的人 + 具体的事」。把客户那句「我想要 AI 客服」翻译成「客服主管每周一早上要花 3 小时、从 4 个系统手动汇总上周的升级工单」——只有翻译到这一层，才算过这一关。", "file": "成长系统/38_FDE全流程可指导方法论_v1.md", "anchor": "SOP 1 · PSF 三关：在立项阶段把「值得做」挑出来"}, {"id": "38-sop2", "label": "MVD（最小可行部署）：用周级节奏在客户真环境证明价值", "type": "sop", "desc": "1. 第一条军规 · 真实数据没有例外：客户必须带自己的真实业务数据来。Palantir 训练营把这条写进规则，OpenAI 内部按这条线划岗位——FDE 必须在客户基础设施上、用客户真实数据写生产代码。", "file": "成长系统/38_FDE全流程可指导方法论_v1.md", "anchor": "SOP 2 · MVD（最小可行部署）：用周级节奏在客户真环境证明价值"}, {"id": "38-sop3", "label": "五份地图：进场前把客户家底摸透", "type": "sop", "desc": "1. 数据地图：有哪些数据源、谁拥有、质量如何、权限归谁。重点不是「有什么」，是「哪个被信任」——几乎每个组织里，官方数据源和员工真正信任的数据源都不是同一个。", "file": "成长系统/38_FDE全流程可指导方法论_v1.md", "anchor": "SOP 3 · 五份地图：进场前把客户家底摸透"}, {"id": "38-sop4", "label": "评测体系：把「好」翻译成可量化的标尺（AI 产品命门）", "type": "sop", "desc": "1. 第一步 · 评估方案 + 黄金集：明确 3 件事——测什么（答对率/响应速度/幻觉率）、用什么标准（谁来判断对错）、测多少（一般 50-100 条起步）。黄金集要来自客户真实业务素材，不能工程师编。", "file": "成长系统/38_FDE全流程可指导方法论_v1.md", "anchor": "SOP 4 · 评测体系：把「好」翻译成可量化的标尺（AI 产品命门）"}, {"id": "38-sop5", "label": "热修复文化：把上线后的迭代做成以小时计", "type": "sop", "desc": "1. 反馈必须直达写代码的人：用户提了问题，下午字段就加上；车间主任说按钮点不准，明天按钮放大一倍。这种速度对用户的意义远超功能本身。", "file": "成长系统/38_FDE全流程可指导方法论_v1.md", "anchor": "SOP 5 · 热修复文化：把上线后的迭代做成以小时计"}, {"id": "38-sop6", "label": "变革管理三件套：动员客户的整个组织为你站台", "type": "sop", "desc": "1. 支持者经营：每个成功部署背后都站着一个客户内部的支持者。给他能讲的材料（讲得出去的故事）、给他战功（把远见变成他职业亮点）、给他安全感（失败时你顶在前面）。教程原话「一个被善待的支持者，胜过十场产品宣讲会」（源自 fde_04 4.6", "file": "成长系统/38_FDE全流程可指导方法论_v1.md", "anchor": "SOP 6 · 变革管理三件套：动员客户的整个组织为你站台"}, {"id": "38-sop7", "label": "灯塔筛选：把 80% 产能压在 20% 真正重要的客户上", "type": "sop", "desc": "1. 决策矩阵只有两个维度：灯塔价值（行业信号强度）+ 学习价值（能沉淀多少可复用能力）。两个都高的客户甚至应该倒贴资源优先做。教程原话「Palantir 早期免费做试点、烧掉数百万美元，赌的就是这个矩阵」。", "file": "成长系统/38_FDE全流程可指导方法论_v1.md", "anchor": "SOP 7 · 灯塔筛选：把 80% 产能压在 20% 真正重要的客户上"}, {"id": "38-sop8", "label": "经验资产化：从 1 到 N 的飞轮", "type": "sop", "desc": "1. 部署模板化：把环境搭建、权限配置、监控接入，打包成一键式 IaC（基础设施即代码）。新客户进场第一天就能拉起标准化环境，而不是从零配置一周。教程原话「Decagon 能把简单场景的部署压到 15 天，背后是高度模板化的接入层」。", "file": "成长系统/38_FDE全流程可指导方法论_v1.md", "anchor": "SOP 8 · 经验资产化：从 1 到 N 的飞轮"}]}, {"id": "39", "label": "39 视频实战经验方法论（9 类 58 法）", "type": "doc", "desc": "111 方法簇提炼：★接单弹药 / ⚪工具玩法 / 🟡可迁移", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "children": [{"id": "39-一、企业", "label": "一、企业 AI 落地·接单武器 🎯（9 簇 → 6 法）★", "type": "cat39", "desc": "6 条方法", "children": [{"id": "39-1.1", "label": "1.1 业务前置验证三件套——AI 落地前先做尽调", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 1.1", "desc": "解决什么问题：企业花 30 万上 AI、3 个月后只剩行政写周报——钱花了、效果没出。根因不是工具差，是没做业务前提验证。"}, {"id": "39-1.2", "label": "1.2 FDE 驻场轻量交付五步法", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 1.2", "desc": "解决什么问题：FDE（Forward Deployed Engineer，前线部署工程师）入企业后怎么快速出活、让客户看到价值、避免被当外包使。"}, {"id": "39-1.3", "label": "1.3 价值导向报价与流程重构定位", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 1.3", "desc": "解决什么问题：AI 项目到底怎么定价？报低了不赚钱，报高了客户跑路。根因是用成本加成定价，没体现价值。"}, {"id": "39-1.4", "label": "1.4 场景化 AI 自动化系统搭建", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 1.4", "desc": "解决什么问题：客户要\"上 AI\"，但具体到场景（电商上新、客服应答、财务对账）该怎么选工具、怎么搭？"}, {"id": "39-1.5", "label": "1.5 组织能力沉淀三阶火箭", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 1.5", "desc": "解决什么问题：客户上了 AI 工具，半年后又吃灰——不是工具不行，是组织没沉淀出能持续放大 AI 的能力。"}, {"id": "39-1.6", "label": "1.6 AI 改造前的\"反 AI 幻觉\"提问清单", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 1.6", "desc": "解决什么问题：客户说\"我想要个 AI 帮我做 XXX\"，但其实是想要个 XX——签单后才发现需求对不上，必烂尾。"}]}, {"id": "39-二、智能", "label": "二、智能体·OpenClaw·Hermes 🤖（23 簇 → 7 法）⚪+🟡", "type": "cat39", "desc": "7 条方法", "children": [{"id": "39-2.1", "label": "2.1 零门槛本地部署三件套——小白别被命令行吓跑", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 2.1", "desc": "解决什么问题：普通人看到\"本地部署大模型\"就头大，怕命令行、怕 Token 费、怕报错。真方法是用图形化工具 + 免费模型 + 网页服务，把门槛降到点鼠标。"}, {"id": "39-2.2", "label": "2.2 给 Agent 装上操作电脑的\"三种手脚\"", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 2.2", "desc": "解决什么问题：AI 只能聊天不能干活——不会点按钮、不会敲命令、不会操作软件。根因是 Agent 缺乏\"操作能力\"。"}, {"id": "39-2.3", "label": "2.3 多 Agent 协同的四种架构", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 2.3", "desc": "解决什么问题：单 Agent 干活返工率高、效率低、容易跑偏。真方法是多个各司其职的 Agent 协同——但架构选错会一团乱。"}, {"id": "39-2.4", "label": "2.4 把日常对话沉淀成可复用 Skills 与长期记忆", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 2.4", "desc": "解决什么问题：AI 用完即忘、每次从零开始——你教它十遍它还是小学生。真方法是把聊天自动结构化沉淀为长期记忆和可调用技能。"}, {"id": "39-2.5", "label": "2.5 底层逻辑先吃透再搭工作流", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 2.5", "desc": "解决什么问题：新手学 Agent 平台只会抄作业、不会自己搭——换个场景就抓瞎。真方法：先啃透变量、类型、JSON 这些地基，再上手工作流。"}, {"id": "39-2.6", "label": "2.6 成本控制三板斧——免费模型 + 本地中间件 + API 套壳", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 2.6", "desc": "解决什么问题：大模型 API 调用贵、国产模型接入难。真方法：用本地中间件安全转发或找免费 API，实现低价甚至零成本接入。"}, {"id": "39-2.7", "label": "2.7 场景扩展三招——让 Agent 随身走、随时用", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 2.7", "desc": "解决什么问题：Agent 只能在固定电脑上用——出差、车上、手机上就抓瞎。真方法：通过硬件改造、移动端、便携部署扩展使用场景。"}]}, {"id": "39-三、AI", "label": "三、AI 编程工具链 💻（34 簇 → 12 法）⚪", "type": "cat39", "desc": "12 条方法", "children": [{"id": "39-3.1", "label": "3.1 基础配置三件套——先别动手，先配好", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.1", "desc": "解决什么问题：Codex/Claude Code 安装后直接干活导致效果差——权限没配、模型没选、网络没通。真方法：先花 10 分钟完成基础配置。"}, {"id": "39-3.2", "label": "3.2 需求先行——AI 不是许愿机", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.2", "desc": "解决什么问题：AI 生成结果差或效率低——根因是用户没想清楚就丢给 AI。真方法：前期梳理需求逻辑和素材，再让 AI 执行。"}, {"id": "39-3.3", "label": "3.3 用对方案——避免慢和贵", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.3", "desc": "解决什么问题：Codex 执行任务慢、消耗 Token 多——根因是技术路径选错（如用 computer use 模拟人工做本可以插件做的事）。"}, {"id": "39-3.4", "label": "3.4 Skill 与 MCP 扩展——让 AI 干\"专业活\"", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.4", "desc": "解决什么问题：AI 编程工具默认能力不足（如不会看图、不会生视频、不会读数据）——需要按场景扩展。"}, {"id": "39-3.5", "label": "3.5 Vibe Coding 视觉质感提升——喂好设计而非自己会设计", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.5", "desc": "解决什么问题：非设计背景用户用 Vibe Coding 做出\"AI 味\"页面——按钮错位、配色辣眼、字体杂乱。真方法：给 AI 喂高质量设计参考。"}, {"id": "39-3.6", "label": "3.6 零基础落地——不会编程也能做工具", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.6", "desc": "解决什么问题：普通人有想法但不会编程，做不出工具。真方法：用 AI 编程工具 + 保姆级教程，零基础也能做 App 或自动化流程。"}, {"id": "39-3.7", "label": "3.7 视频与动画——Codex 的隐藏能力", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.7", "desc": "解决什么问题：非专业人士制作视频/动画门槛高——不会 AE、不会剪辑、不会调色。真方法：用 Codex 搭配特定工具，自然语言描述即可生成专业效果。"}, {"id": "39-3.8", "label": "3.8 自动化运营——Codex 跑通全流程", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.8", "desc": "解决什么问题：自媒体运营中重复性工作耗时——选选题、找素材、写文案、做封面、发布、互动，每一步都耗时间。真方法：让 Codex 接管全流程。"}, {"id": "39-3.9", "label": "3.9 移动与远程协作——不再绑死在电脑前", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.9", "desc": "解决什么问题：开发者不在电脑前时仍需修改代码、查看进度。真方法：手机连接远程服务器召唤 AI 随时干活。"}, {"id": "39-3.10", "label": "3.10 低成本试错——别上来就烧 Token", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.10", "desc": "解决什么问题：用 AI 做产品时盲目开发、烧钱无回报。真方法：先验证需求再做产品，用订阅制工具控制成本。"}, {"id": "39-3.11", "label": "3.11 长时任务与工具边界——AI 不是万能的", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.11", "desc": "解决什么问题：让 AI 在无人监督下自主完成长时间、多步骤任务；同时避免对 AI 期望过高。"}, {"id": "39-3.12", "label": "3.12 视觉与风格迁移——把静态素材变活", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 3.12", "desc": "解决什么问题：手里有静态图片、Logo、传统素材，但想做出动效/3D/风格化作品——成本高、门槛高。真方法：用 AI 工具直接改造静态素材。"}]}, {"id": "39-四、商业", "label": "四、商业案例·变现样板 💰（9 簇 → 4 法）★", "type": "cat39", "desc": "4 条方法", "children": [{"id": "39-4.1", "label": "4.1 短视频高变现公式——痛点-恐吓-展示-人设", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 4.1", "desc": "解决什么问题：短视频播放量高但变现弱——看完点赞就走、从不付费。真方法：用精准痛点开场 + 专业归因 + 后果恐吓 + 效果展示 + 靠谱人设，驱动用户咨询付费。"}, {"id": "39-4.2", "label": "4.2 AI 规模化变现三模式——数字人/反直觉 App/多平台分发", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 4.2", "desc": "解决什么问题：传统变现模式成本高、难规模化。真方法：用 AI 实现 24 小时不间断的内容生产与销售。"}, {"id": "39-4.3", "label": "4.3 算法冷启动红利——新号也能起量", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 4.3", "desc": "解决什么问题：新号没流量、老号被限流——抖音算法变化下内容不获客。真方法：聚焦垂直专业度，适配行为预测机制，抢占新号冷启动流量。"}, {"id": "39-4.4", "label": "4.4 品牌底层逻辑——AI 不是孤立工具", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 4.4", "desc": "解决什么问题：AI 在真实商业中落地脱节——技术牛但客户不买账。真方法：从品牌与消费者关系出发，将 AI 嵌入商业底层逻辑。"}]}, {"id": "39-五、AI", "label": "五、AI 内容创作 🎨（9 簇 → 7 法）⚪", "type": "cat39", "desc": "7 条方法", "children": [{"id": "39-5.1", "label": "5.1 导演思维优先——故事内核比工具重要", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 5.1", "desc": "解决什么问题：AI 视频创作中重技术轻叙事——画面炫酷但没人看得懂。真方法：先想清楚要表达什么故事和情绪，再选择 AI 工具执行。"}, {"id": "39-5.2", "label": "5.2 少素材高质感——8 张照片做出宣传片", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 5.2", "desc": "解决什么问题：实拍素材不足或成本高——没钱请团队、没时间拍大片。真方法：用少量实拍照片结合 AI 生成关键帧，实现丝滑运镜和风格化宣传片。"}, {"id": "39-5.3", "label": "5.3 分镜板两步法——风格化动画可控生成", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 5.3", "desc": "解决什么问题：AI 生成动画时动作不连贯、风格难统一。真方法：先生成动作分镜板，再生成动画的两步法。"}, {"id": "39-5.4", "label": "5.4 4K 修复与分步精修——消除 AI 味", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 5.4", "desc": "解决什么问题：AI 生成视频分辨率低、有 AI 味——观众一眼看出是 AI 做的。真方法：按场景选择修复模型，将修复流程封装为可复用技能。"}, {"id": "39-5.5", "label": "5.5 精准控图——具体元素描述替代抽象概念", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 5.5", "desc": "解决什么问题：AI 生成内容不可控、抽卡式出图——描述\"高级感\"AI 不知道是什么。真方法：描述具体画面元素，运用设计原则。"}, {"id": "39-5.6", "label": "5.6 数字人口播——一张照片搞定", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 5.6", "desc": "解决什么问题：不想露脸拍摄口播或分身视频。真方法：用一张照片和 AI 工具快速生成口型、表情、动作匹配的数字人。"}, {"id": "39-5.7", "label": "5.7 低成本创意——几毛钱道具 + 免费模型", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 5.7", "desc": "解决什么问题：个人创作者预算有限但想提升视频创意。真方法：用物理道具 + 后期抠图或免费 AI 模型，替代昂贵设备和专业软件。"}]}, {"id": "39-六、自媒", "label": "六、自媒体·获客运营 📣（7 簇 → 4 法）🟡", "type": "cat39", "desc": "4 条方法", "children": [{"id": "39-6.1", "label": "6.1 AI 自动化 SOP——把内容生产变成流水线", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 6.1", "desc": "解决什么问题：个人创作者依赖灵感、效率低。真方法：用 AI 工具搭建可复制的自动化内容生产流程，把选题、素材、创作、归档等环节标准化。"}, {"id": "39-6.2", "label": "6.2 AI 实用化——从刷视频到用 AI 干活", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 6.2", "desc": "解决什么问题：人们花大量时间刷短视频却无产出、效率低下。真方法：主动用 AI 工具解决具体任务，而非被动消费内容。"}, {"id": "39-6.3", "label": "6.3 博主身份的社会资本积累——不为涨粉为背书", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 6.3", "desc": "解决什么问题：普通人做自媒体目标错位、难以持续。真方法：明确做小博主的目的是积累社会身份资本，为求职、合作、社交加分，而非单纯追求粉丝量。"}, {"id": "39-6.4", "label": "6.4 视觉稳定与算法适应——专业原创吃流量", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 6.4", "desc": "解决什么问题：AI 生成视频时画面抽卡、角色不一致；新算法下流量获取不确定。真方法：用故事板+角色设定图稳定生成；用专业原创内容适配算法。"}]}, {"id": "39-七、效率", "label": "七、效率工具·知识管理 🧰（7 簇 → 6 法）⚪", "type": "cat39", "desc": "6 条方法", "children": [{"id": "39-7.1", "label": "7.1 Obsidian 统一归档——一个入口收所有平台", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 7.1", "desc": "解决什么问题：收藏内容分散在微信、知乎、微博、抖音，难以查找。真方法：通过一个入口将各平台内容自动同步到 Obsidian，实现私有化归档。"}, {"id": "39-7.2", "label": "7.2 本地 AI 知识库——Obsidian + Ollama + DeepSeek", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 7.2", "desc": "解决什么问题：云端 AI 无法访问个人笔记——你问它\"我之前记的那个 XXX\"它答不上。真方法：通过本地部署 AI 模型，让 AI 基于私有笔记进行精准问答。"}, {"id": "39-7.3", "label": "7.3 豆包四步法——快速掌握陌生领域", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 7.3", "desc": "解决什么问题：面对陌生领域无从下手——不知道从哪开始、不知道信什么信息。真方法：通过\"提问-溯源-梳理-输出\"四步，快速建立认知框架。"}, {"id": "39-7.4", "label": "7.4 移动端 AI——手机也能跑 Agent", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 7.4", "desc": "解决什么问题：AI 工具受限于电脑端——出差路上、车上、地铁里想用 AI 没办法。真方法：通过 Harness 工具在手机端直接使用。"}, {"id": "39-7.5", "label": "7.5 零代码 AI 应用生成——豆包电脑版内置", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 7.5", "desc": "解决什么问题：非程序员无法开发软件——想做个小工具不会写代码。真方法：通过 AI 编程工具，零基础也能生成并运行小游戏、图表和完整项目。"}, {"id": "39-7.6", "label": "7.6 场景定制 AI 工具——教学与办公", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 7.6", "desc": "解决什么问题：通用工具不贴合特定场景——通用 CRM 满足不了你的细分需求。真方法：通过 AI 定制开发教学或办公工具。"}]}, {"id": "39-八、AI", "label": "八、AI 认知·趋势·观点 🧠（7 簇 → 6 法）★", "type": "cat39", "desc": "6 条方法", "children": [{"id": "39-8.1", "label": "8.1 AI 驱动学习——从系统教程到对话学习", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 8.1", "desc": "解决什么问题：AI 时代如何高效学习与自我提升——传统系统教程跟不上技术迭代。真方法：不再依赖系统教程，通过主动向 AI 提问、承认无知并构建对话来获取定制化知识。"}, {"id": "39-8.2", "label": "8.2 AI 重塑内容生产工作流——端到端自动化", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 8.2", "desc": "解决什么问题：视频、字幕、动效等创意内容制作效率低下。真方法：利用 AI 工具实现从素材到成品的端到端自动化处理，而非单点辅助。"}, {"id": "39-8.3", "label": "8.3 个人风格库与模板库——告别 AI 味", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 8.3", "desc": "解决什么问题：AI 生成内容千篇一律、缺乏个人特色。真方法：为 AI 建立有品位的风格库和可复用的经验模板。"}, {"id": "39-8.4", "label": "8.4 识别 AI 商业机会与风险边界", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 8.4", "desc": "解决什么问题：在 AI 浪潮中把握商业机遇同时规避重大风险。真方法：既要看到数据、Token 等新资产和疗愈等新赛道的潜力，也要警惕技术夸大和合规红线。"}, {"id": "39-8.5", "label": "8.5 洞察 AI 宏观趋势与竞争格局", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 8.5", "desc": "解决什么问题：理解 AI 发展宏观态势、指导个人与企业战略定位。真方法：关注中美 AI 竞争焦点从模型能力转向生态、价格与应用落地，并理解 Token 的战略资源属性。"}, {"id": "39-8.6", "label": "8.6 AI 辅助创意实现与作品打磨", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 8.6", "desc": "解决什么问题：个人创作者将创意快速转化为可交互作品或精致内容。真方法：利用 AI 3D 工具和免费模型，降低技术门槛，让普通人也能实现高质感创意。"}]}, {"id": "39-九、自己", "label": "九、自己的内容资产 📦（6 簇 → 6 法）⚪", "type": "cat39", "desc": "6 条方法", "children": [{"id": "39-9.1", "label": "9.1 微信 AI 零门槛——日常文件图片处理", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 9.1", "desc": "解决什么问题：普通人不想下载软件、不会 PS 也能处理文档和图片。真方法：直接用微信自带 AI 读取聊天文件或改图加字。"}, {"id": "39-9.2", "label": "9.2 驯服 AI 先喂身份再装技能", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 9.2", "desc": "解决什么问题：普通人不知道如何让 AI 听话干活——AI 答非所问、推荐不对路。真方法：先给 AI 设定身份信息，再逐步添加技能，每次开新对话，边学边用。"}, {"id": "39-9.3", "label": "9.3 免费 Token 体验多 Agent", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 9.3", "desc": "解决什么问题：零成本尝试 AI 自动化——担心学完才发现要花很多钱。真方法：利用腾讯 Marvis 每天赠送的免费 Token，体验多 Agent 协作。"}, {"id": "39-9.4", "label": "9.4 电商人选 AI 工具的正确姿势", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 9.4", "desc": "解决什么问题：电商人选 AI 工具时不知选哪款、怎么问。真方法：关键看工具匹配度和提问方式，推荐阿里悟空免费生成主图。"}, {"id": "39-9.5", "label": "9.5 AI 自动化抢码与情感互动", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 9.5", "desc": "解决什么问题：手速不够抢不到邀请码；以及让科技服务情感表达。真方法：用 AI 自动化技能定时刷新抢码，或用填空互动生成信件。"}, {"id": "39-9.6", "label": "9.6 从一件小事开始成为 AI 使用者", "type": "method", "file": "成长系统/39_514视频实战经验方法论文集_v1.md", "anchor": "方法 9.6", "desc": "解决什么问题：观望者迟迟不敢行动——总觉得要先学完才能用。真方法：别纠结天赋，从一件具体小事开始用 AI，逐步从观望者变成使用者。"}]}]}, {"id": "40", "label": "40 视频补缺方法论（16 条）", "type": "doc", "desc": "514 视频核心 3 类 64 条全文精读出的、没被 39 归纳进去的散点经验", "file": "成长系统/40_514视频补缺方法论_v1.md", "children": [{"id": "40-A1", "label": "A1 Skill 产品化：把交付沉淀成可重复销售的 Skill 套件", "type": "gap", "desc": "作者说了什么： 智群 Ai《微信公众号 AI 运营 Skill 套件》里，把\"公众号运营者的一整套日常工作（选题调研→文章写作→审稿校对→排版→马克档）\"封装成一套\"按流程干活的公众号数字员工\"。用法：直接用微信 API 发布、多帐号管理，整体打包在一套 AI Agent 工作流里——交付一次，后续可重复卖给同类公众号。", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "A1"}, {"id": "40-A2", "label": "A2 农业垂类落地的\"刚性自动化+AI降门槛\"五件套", "type": "gap", "desc": "作者说了什么： 单车酒吧搞机社《AI+智慧农业落地全纪实》讲了一个新疆棉花基地（80% 棉田）的真实落地方案。客户原话\"想用 AI 全部替代人力\"，作者没有直接答应，先讲 AI 局限（农业不能试错，CV/大模型都不能 100%），再给出 5 步方案：①先做刚性自动化（把农艺专家经验写成固定代码——土壤湿度<阈值+在浇水时段+水位够→自动开阀提水灌盖关阀，不依赖 AI 推理）②本地部署保稳定（所有决", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "A2"}, {"id": "40-A3", "label": "A3 AI 原生组织的\"认知节点 + 端到端反馈\"双指标", "type": "gap", "desc": "作者说了什么： 曾鸣（智能体/北京观塘智）《AI原生组织长什么样》提出两个判断： 未来组织只做两件事——①运营自动化 ②战略决策高质量化。AI 原生不是\"把 AI 当工具\"，而是\"以 AI 为起点设计全部工作流\"，目标就是把人踢下来，越快越好（Tesla FSD 端到端路线）——只要人在中间效率立马打折。 组织的最小单元不再是\"岗位\"，而是\"认知节点\"（你能干啥活 = 你的能力单元 = 你能不能被", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "A3"}, {"id": "40-A4", "label": "A4 B 端获客的\"培训即获客\"低成本打法", "type": "gap", "desc": "作者说了什么： 清华鑫哥讲 AI 智能体《做了 1 年 B 端 Agent 搭建，踩坑无数，总结出来七条血泪经验》里第 4 条原话：\"培训是最便宜的获客——给企业做一场 AI 的内训，台下坐的全是各个部门的负责人，课讲完，需求往往自己就冒出来了。我之前手上一半的交付项目，源头其实都来自于每一场的培训，有的是这个付费的内训。\"", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "A4"}, {"id": "40-A5", "label": "A5 销售型企业 AI 落地的\"权力回收\"叙事", "type": "gap", "desc": "作者说了什么： 皮皮《FDE 凭什么月入 10 万？真正值钱的根本不是 AI》里讲到一个中型外贸公司的真实案例：客户原有流程是销售提单→法务确认→财务确认→销售 VP 审核——本质是\"责任分摊 + 权力分摊\"，销售 VP 即使同意也得等下面过一遍才能批，法务/财务都不敢放权给 AI。作者团队做了一套 AI 系统，把审批逻辑变成 AI 综合评判（销售需求+财务能力+法务能力+部门完成度），最终结果只", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "A5"}, {"id": "40-B1", "label": "B1 获客型短视频的\"问题+解法+方案\"三段式", "type": "gap", "desc": "作者说了什么： 余敖 IP 商业修行《获客型短视频怎么做？》提出获客型短视频的底层逻辑 = 问题 + 解法 + 方案，跟\"痛点-恐吓-展示\"完全不同： 问题 = 即刚的痛点：不是所有痛点都值得做选题，只有目标客户在决策过程中愿意付费解决的才叫即刚（如定位纠偏、战略卡点）。客户自己会做的不付费（基础调研）。 解法 = 讲思考路径：别给标准答案，用\"错在哪 → 为什么 → 怎么做\"结构（先讲反常识错误", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "B1"}, {"id": "40-B2", "label": "B2 能力-变现匹配的\"四类人四类内容\"框架", "type": "gap", "desc": "作者说了什么： 郑经说《对号入座：你适合卖什么产品，做什么内容？》给出四类人对应四类变现： 逻辑能力强 → 适合卖课 → 内容讲方法论 判断力强 → 适合卖咨询和诊断 → 内容讲卡点和卡点后的判断 执行力强 → 适合做陪跑 → 内容讲流程和案例 什么能力都没有 → 先找一个生意先做起来再说（不卖课不卖咨询，先做业务）", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "B2"}, {"id": "40-B3", "label": "B3 独立开发者的\"vibe coding 11 步\"全流程", "type": "gap", "desc": "作者说了什么： 光羽的平行世界《一个人一台电脑 年收入超 1000 万》采访刘小排（中国独立开发者，年入千万），他把自己的工作拆成 11 步： 找需求：自己先发现一个别人没注意到的细分痛点 AI 当产品经理：把想法丢给 DeepSeek/ChatGPT，让它联网查竞品评估机会，写成需求文档 AI 做原型：先在纸上画界面 → 让 AI 生成高保真原型 → 发给目标用户确认 AI 写代码：用中文提需求", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "B3"}, {"id": "40-B4", "label": "B4 提示词\"提问式学习\"哲学", "type": "gap", "desc": "作者说了什么： 趙亮《AI 提示词和提问有什么不同？》核心观点：①提示词是给机器看的\"需求说明书\"，本质是用机器最懂的结构化语言，把商业场景的定量和变量全部写清楚（不反过）②普通老板用 AI 听不进去，是因为 AI 给的回答是\"专业语言\"——你能把它翻译成\"有趣的人话\"才有价值③商用级提示词叫\"提示工程\"，跟写代码一样需要逻辑和结构，不是随便聊天。他的一条提示词能卖 5000-20000 元。", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "B4"}, {"id": "40-C1", "label": "C1 AI 深度内容策划的\"五步提纲+复盘\"", "type": "gap", "desc": "作者说了什么： 脱不花《我怎么用 AI 策划《长谈》》讲的是长访谈类深度内容的 AI 工作流——不是普通自媒体，是 5 万字/期、单期成本十几万的访谈节目级内容： 嘉宾研究：让 AI 扫嘉宾所有公开表达，找出\"跟他有关但从未被问过\"的问题，从这撕口子。 全球对标：让 AI 自动找全球身份类似的人，看顶级访谈节目聊了什么——几小时拿到一张\"对标地图\"。 访谈技术对标：让 AI 对比奥普拉、马克·马龙", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "C1"}, {"id": "40-C2", "label": "C2 AI 时代的\"4 本书思维方法论\"", "type": "gap", "desc": "作者说了什么： 我是宋玥《AI 时代需要重新读的书》推荐 4 本书，每本对应一种 AI 时代核心能力： 《金字塔原理》（麦肯锡）：把模糊需求拆成论点+论据，用结构化思维跟 AI 沟通——AI 不会替你思考模糊，但你能用金字塔原理先想清楚再问。 《学会提问》（批判性思维）：问题的质量决定答案的质量。AI 一分钟给你 20 个方案，但你的时间没多——问对问题比工具重要。 《精要主义》（更少但更好）：A", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "C2"}, {"id": "40-C3", "label": "C3 顶尖专家 vs 通才的\"红沟\"判断", "type": "gap", "desc": "作者说了什么： 昌健胡说转述李飞飞（斯坦福 AI 教母）核心判断：AI 时代，人和人的差距是\"红沟\"——主动用 AI 造东西的人越用越有底气；被动等别人告诉的人越等越没底气。李飞飞提出未来两类最值钱的人： 行业顶尖 1% 专家：单领域钻得深到 AI 替代不了（如顶级律师、医生、投资人） 判断力超强的通才：什么都能上手，敢拿主意，靠 AI 跨过专业之间的墙——一个人推动一个完整项目", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "C3"}, {"id": "40-C4", "label": "C4 教育\"新内卷\"批判与本质回归", "type": "gap", "desc": "作者说了什么： 新京报/北京大学哲学系教授程乐松的核心观点：\"AI 时代真正的焦虑不是技术本身，而是孩子会不会被社会评判为'落后'，从而被踢出竞争赛道。\"他指出三个判断： AI 教育的本质错位：社会把\"会不会用 AI\"当默认技能，没条件深入学的孩子就被悄悄划入\"掉队\"群体。 新内卷的实质：家长感到的\"落后\"压迫感来自社会评价，不是技术本身。 教育的本质回归：当 AI 能力被默认为标配，\"会用 AI", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "C4"}, {"id": "40-C5", "label": "C5 爬虫/数据合规的\"三问自查\"红线", "type": "gap", "desc": "作者说了什么： 单律聊 AI《爬虫圈 3 大坑，踩一个赔 8 位数，踩两个进去》给出 3 个爬虫项目必答问题： 你爬的数据别人能不能直接看？——需要登录/付费/破解才能看到的数据 = 触犯刑法\"非法获取计算机信息系统数据罪\"。已有判刑案例。 你拿这些数据是干嘛的？——做\"替代品\"（用户在你这也看到原平台全部内容）= 实质性替代，B 百科爬 A 百科判赔 1500 万。做\"新东西\"（加工产生新价值）", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "C5"}, {"id": "40-C6", "label": "C6 知识库的\"套模板\"哲学", "type": "gap", "desc": "作者说了什么： 老周聊 AI 决策（周俊东）《低效的人遇事就查，高效的人遇事就\"套\"》核心观点： 别把知识库当\"查资料\"工具，要把它当\"套模板\"武器——用固定框架复用经验，而不是每次从零开始。 建模板库：把过去做过的成功项目、方案、流程沉淀成标准化模板，按场景分类。 遇事先\"套\"：接到新任务，先翻模板库找最接近的框架，直接套用结构，只更新里面的具体内容。 强制用模板：规定团队产出必须从模板出发，不", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "C6"}, {"id": "40-C7", "label": "C7 鉴别 AI 营销号与\"能力边界判断\"", "type": "gap", "desc": "作者说了什么： 不过几千寒热《Claude 做神级网页？一键轻轻松松？》核心观点：当前 AI 根本做不出 Lucin、60fps 等顶级工作室的 3D 交互动效网页，那些炫酷作品被某些博主截图后声称\"我用 Codex/CloudCode 做的\"，评论区没人质疑。 判断 AI 能力边界：看到炫酷 3D/交互动效网页，先默认是专业团队作品，别轻信\"AI 一键生成\"。 验证信息来源：用截图反向搜图，或查", "file": "成长系统/40_514视频补缺方法论_v1.md", "anchor": "C7"}]}, {"id": "41", "label": "41 方法论三件套 MECE 汇总", "type": "doc", "desc": "38/39/40 为什么不重不漏 + 怎么配合用", "file": "成长系统/41_方法论三件套MECE汇总_v1.md"}, {"id": "42", "label": "42 全景地图收口审计（为什么这么设计）", "type": "doc", "desc": "10 个地图文档的图鉴 + 设计理由 + 权威等级 + 缺口", "file": "成长系统/42_全景地图收口审计与总图_v1.md"}]}, {"id": "C", "label": "C 三张视角地图", "type": "branch", "desc": "同一件事的三种问法，互斥且穷尽：业务（怎么接单）／工程（怎么做出来）／权威（凭什么信）", "children": [{"id": "09", "label": "09 业务地图（7 阶段 37 关卡）", "type": "doc", "desc": "接客户到规模化的业务侧全景", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "children": [{"id": "09-阶段 1：接", "label": "阶段 1：接客户 / 需求澄清", "type": "leaf", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 1：接客户 / 需求澄清"}, {"id": "09-阶段 2：技", "label": "阶段 2：技术选型 / 框架设计", "type": "leaf", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 2：技术选型 / 框架设计"}, {"id": "09-阶段 3：M", "label": "阶段 3：MVP / 试点", "type": "leaf", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 3：MVP / 试点"}, {"id": "09-阶段 4：交", "label": "阶段 4：交付部署 / 上线", "type": "leaf", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 4：交付部署 / 上线"}, {"id": "09-阶段 5：质", "label": "阶段 5：质量保障 / 持续稳定", "type": "leaf", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 5：质量保障 / 持续稳定"}, {"id": "09-阶段 6：运", "label": "阶段 6：运营 / 续约 / 客户成功", "type": "leaf", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 6：运营 / 续约 / 客户成功"}, {"id": "09-阶段 7：复", "label": "阶段 7：复盘沉淀 / 规模化", "type": "leaf", "file": "成长系统/09_企业AI落地全流程关卡地图_v1.md", "anchor": "阶段 7：复盘沉淀 / 规模化"}]}, {"id": "25", "label": "25 工程地图（12 阶段 9 门禁）", "type": "doc", "desc": "一个程序从 0 到 1 到 N 的工程全流程", "file": "成长系统/25_程序全流程工程全景_v1.md", "children": [{"id": "25-阶段 1 · 需", "label": "阶段 1 · 需求澄清（Discover）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 1 · 需求澄清（Discover）"}, {"id": "25-阶段 2 · 方", "label": "阶段 2 · 方案设计（Design）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 2 · 方案设计（Design）"}, {"id": "25-阶段 3 · 架", "label": "阶段 3 · 架构选型 + 载体决策（Architect）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 3 · 架构选型 + 载体决策（Architect）"}, {"id": "25-阶段 4 · 数", "label": "阶段 4 · 数据准备（Data）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 4 · 数据准备（Data）"}, {"id": "25-阶段 5 · 评", "label": "阶段 5 · 评估体系搭建（Eval）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 5 · 评估体系搭建（Eval）"}, {"id": "25-阶段 6 · 开", "label": "阶段 6 · 开发实现（Build）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 6 · 开发实现（Build）"}, {"id": "25-阶段 7 · 测", "label": "阶段 7 · 测试（Test）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 7 · 测试（Test）"}, {"id": "25-阶段 8 · 部", "label": "阶段 8 · 部署上线（Deploy）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 8 · 部署上线（Deploy）"}, {"id": "25-阶段 9 · 验", "label": "阶段 9 · 验收交付（Accept）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 9 · 验收交付（Accept）"}, {"id": "25-阶段 10 · ", "label": "阶段 10 · 运维监控（Operate）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 10 · 运维监控（Operate）"}, {"id": "25-阶段 11 · ", "label": "阶段 11 · 迭代优化（Iterate）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 11 · 迭代优化（Iterate）"}, {"id": "25-阶段 12 · ", "label": "阶段 12 · 退役下线（Retire）", "type": "leaf", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "阶段 12 · 退役下线（Retire）"}, {"id": "25-gG1", "label": "G1 需求门", "type": "gate", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "G1 需求门"}, {"id": "25-gG2", "label": "G2 方案门", "type": "gate", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "G2 方案门"}, {"id": "25-gG3", "label": "G3 载体门", "type": "gate", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "G3 载体门"}, {"id": "25-gG4", "label": "G4 数据门", "type": "gate", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "G4 数据门"}, {"id": "25-gG5", "label": "G5 评测门", "type": "gate", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "G5 评测门"}, {"id": "25-gG6", "label": "G6 测试门", "type": "gate", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "G6 测试门"}, {"id": "25-gG7", "label": "G7 上线门", "type": "gate", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "G7 上线门"}, {"id": "25-gG8", "label": "G8 验收门", "type": "gate", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "G8 验收门"}, {"id": "25-gG9", "label": "G9 退役门", "type": "gate", "file": "成长系统/25_程序全流程工程全景_v1.md", "anchor": "G9 退役门"}]}, {"id": "34", "label": "34 权威地图 v2（三轨合流）", "type": "doc", "desc": "轨A FDE交付（原厂一手）× 轨B 工程标准（云厂/ISO）× 轨C 企业治理（权威机构）", "file": "成长系统/34_企业AI落地全景地图_工作台.md", "children": [{"id": "34-A1", "label": "A1 解决正确的问题", "type": "leaf", "file": "成长系统/34_企业AI落地全景地图_工作台.md", "anchor": "A1"}, {"id": "34-A2", "label": "A2 赢得客户", "type": "leaf", "file": "成长系统/34_企业AI落地全景地图_工作台.md", "anchor": "A2"}, {"id": "34-A3", "label": "A3 激活部署", "type": "leaf", "file": "成长系统/34_企业AI落地全景地图_工作台.md", "anchor": "A3"}, {"id": "34-A4", "label": "A4 守住续约", "type": "leaf", "file": "成长系统/34_企业AI落地全景地图_工作台.md", "anchor": "A4"}, {"id": "34-A5", "label": "A5 扩大收入", "type": "leaf", "file": "成长系统/34_企业AI落地全景地图_工作台.md", "anchor": "A5"}, {"id": "34-A6", "label": "A6 规模化复制", "type": "leaf", "file": "成长系统/34_企业AI落地全景地图_工作台.md", "anchor": "A6"}, {"id": "34-A7", "label": "A7 现场反馈环", "type": "leaf", "file": "成长系统/34_企业AI落地全景地图_工作台.md", "anchor": "A7"}, {"id": "34-A8", "label": "A8 职业道德与边界", "type": "leaf", "file": "成长系统/34_企业AI落地全景地图_工作台.md", "anchor": "A8"}]}]}, {"id": "D", "label": "D 方法卡（25 张 · 17 域）", "type": "branch", "desc": "单点深度卡：接到项目时按域取用（检索走 retrieve_for_project.py）", "children": [{"id": "dom-AR", "label": "AR（2）", "type": "dom", "children": [{"id": "f-AR-001-架构决策框架", "label": "AR-001 · 架构决策框架", "type": "fcard", "desc": "新项目第一周应该按什么顺序做什么架构决策，避免「想到哪做到哪」——把零散的技术选型（模型、数据库、部署形态、风控、计费、可观测）收束成一份「可以照着做」的决策清单 + 一份「可以回去查」的回溯日志。", "file": "foundations/AR/AR-001-架构决策框架.md"}, {"id": "f-AR-002-你的3项目实战映射", "label": "AR-002 · 你的 3 项目实战映射", "type": "fcard", "desc": "拿我们做过的真实项目回答「当时为什么选这个架构」——把 AR-001 的外部框架套到 3 个本土项目上，提炼出\"在中文环境、在中小客户预算下\"的具体决策路径，给未来新客户做参考。", "file": "foundations/AR/AR-002-你的3项目实战映射.md"}]}, {"id": "dom-CJ", "label": "CJ（1）", "type": "dom", "children": [{"id": "f-CJ-001-客户旅程与报价档位", "label": "CJ-001 · 客户旅程与报价档位", "type": "fcard", "desc": "*客户付 ¥3k 还是付 ¥300k，决定了你做什么——报价档位对应完全不同的服务深度。", "file": "foundations/CJ/CJ-001-客户旅程与报价档位.md"}]}, {"id": "dom-COMP", "label": "COMP（1）", "type": "dom", "children": [{"id": "f-COMP-001合规与法律", "label": "COMP-001 合规与法律", "type": "fcard", "desc": "1. 数据出域：用户数据是否离开客户所在司法管辖区？服务器在境内还是境外？", "file": "foundations/COMP/COMP-001合规与法律.md"}]}, {"id": "dom-CRISIS", "label": "CRISIS（1）", "type": "dom", "children": [{"id": "f-CRISIS-001危机管理", "label": "CRISIS-001 危机管理", "type": "fcard", "desc": "1. 账号封禁：核心平台账号（VK / Ozon / 微信）被封禁后是否有备份账号与切换流程？", "file": "foundations/CRISIS/CRISIS-001危机管理.md"}]}, {"id": "dom-DATA", "label": "DATA（1）", "type": "dom", "children": [{"id": "f-DATA-001-企业数据治理与两周MVD", "label": "DATA-001 企业数据治理与两周MVD", "type": "fcard", "desc": "企业 AI 项目 70% 败在数据（Rand 调查）——本卡解决「进场第一周怎么把客户数据盘清楚、判断能不能做、并选出离钱最近的两周 MVD 场景」，同时不忽悠客户上重平台（第一单不上 Kafka+数仓全家桶是红线）。", "file": "foundations/DATA/DATA-001-企业数据治理与两周MVD.md"}]}, {"id": "dom-ECO", "label": "ECO（1）", "type": "dom", "children": [{"id": "f-ECO-001生态与工具", "label": "ECO-001 生态与工具", "type": "fcard", "desc": "1. 模型选型：主力模型是闭源旗舰（GPT/Claude）还是开源自托管（DeepSeek/MiniMax）？按量 vs 包月？", "file": "foundations/ECO/ECO-001生态与工具.md"}]}, {"id": "dom-EVAL", "label": "EVAL（4）", "type": "dom", "children": [{"id": "f-EVAL-001-效果评估", "label": "EVAL-001 效果评估", "type": "fcard", "desc": "效果评估解决的是「AI 项目从'看着像有用'到'真的有用'的可证明转换」——用一组标准场景（黄金集）+ 量化指标（命中率、转化率、回归通过率）+ 真实业务验收（真烧积分、真上线、真出单），把模糊的「效果不错」翻译成可追责的数字。", "file": "foundations/EVAL/EVAL-001-效果评估.md"}, {"id": "f-EVAL-002-高级效果评估", "label": "EVAL-002 高级效果评估（v2.0 增强版）", "type": "fcard", "desc": "高级效果评估解决的是「AI 项目从 demo 跑通到客户愿意续约、愿意付更多钱、愿意推荐给同行」的全链路度量——用北极星指标牵引方向，用 Jobs-to-be-Done 校准真实价值，用业务指标体系量化客户终身价值。", "file": "foundations/EVAL/EVAL-002-高级效果评估.md"}, {"id": "f-EVAL-003-AI应用评测与可观测：上线前必须有的保障", "label": "[候选] AI 应用评测与可观测:上线前必须有的保障", "type": "fcard", "desc": "收录时间:2026-09-03", "file": "foundations/EVAL/EVAL-003-AI应用评测与可观测：上线前必须有的保障.md"}, {"id": "f-EVAL-004-评测集建设与偏见审计", "label": "EVAL-004 评测集建设与偏见审计", "type": "fcard", "desc": "评测集是 AI 项目的「考卷」——考卷出得烂（太简单/有标准答案泄漏/只覆盖一种客户），AI 考 100 分也没用。本卡解决考卷本身的质量：来源、规模、分布、标注、更新、防泄漏、防偏见，让「离线评测通过」真的能预示「上线能打」。", "file": "foundations/EVAL/EVAL-004-评测集建设与偏见审计.md"}]}, {"id": "dom-FDE", "label": "FDE（4）", "type": "dom", "children": [{"id": "f-FDE-001-角色定义与边界", "label": "FDE-001 角色定义与边界", "type": "fcard", "desc": "FDE（Forward Deployed Engineer, 前线部署工程师）解决的，是「企业花几百万美元买人工智能系统、却没有人真的用起来」这道鸿沟——派最会写代码的人，扎进客户真实业务现场，把模型塞进工作流里，直到客户自己的组织行为发生可度量的改变。", "file": "foundations/FDE/FDE-001-角色定义与边界.md"}, {"id": "f-FDE-002-FDE六阶段旅程", "label": "FDE-002 FDE 六阶段旅程", "type": "fcard", "desc": "FDE 的工作不是「接单 → 交付 → 收钱」的一次性交易，而是沿着六阶段闭环「找问题→赢客户→激活→续约→扩收→规模化复制」不断把单点价值沉淀为可复用资产——客户在长大，组织也在长大，离开时留下的不只是合同，而是平台更厚、团队更强、行业地位更稳。", "file": "foundations/FDE/FDE-002-FDE六阶段旅程.md"}, {"id": "f-FDE-004-12-Factor Agents：把 Agent 当可靠生产系统设计的 12 条真实原则", "label": "12-Factor Agents：把 Agent 当可靠生产系统设计的 12 条真实原则", "type": "fcard", "desc": "审核时间：2026-09-03 19:54", "file": "foundations/FDE/FDE-004-12-Factor Agents：把 Agent 当可靠生产系统设计的 12 条真实原则.md"}, {"id": "f-M-FDE-001-企业AI落地第一性原理", "label": "M-FDE-001 企业AI落地第一性原理（范冰《前线部署工程师》读书沉淀）", "type": "fcard", "desc": "状态：✅ 已审核（升格为正式方法论卡）", "file": "foundations/FDE/M-FDE-001-企业AI落地第一性原理.md"}]}, {"id": "dom-ITER", "label": "ITER（1）", "type": "dom", "children": [{"id": "f-ITER-001-反馈闭环与度量驱动改进", "label": "ITER-001 反馈闭环与度量驱动改进", "type": "fcard", "desc": "「做完就完了」是大多数团队的通病——项目交付后不度量、不复盘、不把教训变成下一轮的输入，导致同样的坑反复踩。反馈闭环解决的是：用什么度量、怎么收集反馈、怎么让教训真正改进行为，让每个项目都比上一个更稳。", "file": "foundations/ITER/ITER-001-反馈闭环与度量驱动改进.md"}]}, {"id": "dom-MLOPS", "label": "MLOPS（1）", "type": "dom", "children": [{"id": "f-MLOPS-001-模型运维与漂移监控", "label": "MLOPS-001 模型运维与漂移监控", "type": "fcard", "desc": "AI 系统上线不是结束而是开始——模型会漂移（数据变了/业务变了/世界变了），今天 95 分准确率的系统半年后可能只剩 70 分还不自知。模型运维解决：怎么发现模型变差、怎么回滚、怎么让系统持续自我改进，防止「上线即巅峰、之后悄悄烂掉」。", "file": "foundations/MLOPS/MLOPS-001-模型运维与漂移监控.md"}]}, {"id": "dom-ORG", "label": "ORG（1）", "type": "dom", "children": [{"id": "f-ORG-001组织与团队", "label": "ORG-001 组织与团队", "type": "fcard", "desc": "组织解决的是「人多了之后怎么不互相拖累」——从单兵到小团队到跨职能团队，每次跨越都要重新设计决策权、沟通路径、交接标准，否则效率与人数成反比。", "file": "foundations/ORG/ORG-001组织与团队.md"}]}, {"id": "dom-POC", "label": "POC（1）", "type": "dom", "children": [{"id": "f-POC-001-POC与MVP验证", "label": "POC-001 · POC 与 MVP 验证", "type": "fcard", "desc": "*怎么用 1-2 周证明「这件事值得做」，又不被客户的「改 3 版 POC」拖死。", "file": "foundations/POC/POC-001-POC与MVP验证.md"}]}, {"id": "dom-PRICE", "label": "PRICE（1）", "type": "dom", "children": [{"id": "f-PRICE-001定价与商业化", "label": "PRICE-001 定价与商业化", "type": "fcard", "desc": "定价解决的是「客户付得起、自己赚得到、长期能涨」三方平衡——用一组合适的定价模型 + 心理锚点 + 价值计量，让单笔交易变成长期关系。", "file": "foundations/PRICE/PRICE-001定价与商业化.md"}]}, {"id": "dom-REL", "label": "REL（1）", "type": "dom", "children": [{"id": "f-REL-001-可靠性与自愈", "label": "REL-001 可靠性与自愈", "type": "fcard", "desc": "可靠性解决的是「系统在没人看着的时候，能不能自己继续把事做完、并在坏掉的时候自己爬起来」——把人工运维压到极限，同时让单点故障不变成服务中断。", "file": "foundations/REL/REL-001-可靠性与自愈.md"}]}, {"id": "dom-REQ", "label": "REQ（1）", "type": "dom", "children": [{"id": "f-REQ-001-需求工程", "label": "REQ-001 需求工程", "type": "fcard", "desc": "需求工程是把「客户模糊的痛」（客服成本高/文档查不到/质检靠人眼）翻译成「机器可验收的规格」（场景+输入+输出+验收标准），并管理后续变更——AI 项目 95% 的失败不在模型，在没把问题定义到「不记反馈、不存上下文、不进工作流」这层（MIT NANDA 报告，范冰书引用）。", "file": "foundations/REQ/REQ-001-需求工程.md"}]}, {"id": "dom-RETIRE", "label": "RETIRE（1）", "type": "dom", "children": [{"id": "f-RETIRE-001-退役合规清单", "label": "RETIRE-001 退役合规清单", "type": "fcard", "desc": "项目总有结束的一天——客户不续约、系统被替换、试用到期。退役不是「把服务关掉」那么简单：数据怎么删干净、合同怎么收尾、客户团队会不会断粮、我们自己的后台任务会不会变成幽灵进程。退役合规清单让收尾「体面、干净、无遗留」。", "file": "foundations/RETIRE/RETIRE-001-退役合规清单.md"}]}, {"id": "dom-SALES", "label": "SALES（2）", "type": "dom", "children": [{"id": "f-SALES-001销售与增长", "label": "SALES-001 销售与增长", "type": "fcard", "desc": "销售与增长解决的是「让对的人在对的时机以对的方式听到对的承诺，然后自然走到签单」——不是 push 客户买，而是设计一条客户愿意走的路。", "file": "foundations/SALES/SALES-001销售与增长.md"}, {"id": "f-SALES-002-企业语音多平台获客实战手册", "label": "企业语音多平台获客实战手册", "type": "fcard", "desc": "不是「如何用 AI 写文案」，而是「怎么用 AI 把企业项目第一次卖出去」。", "file": "foundations/SALES/SALES-002-企业语音多平台获客实战手册.md"}]}]}, {"id": "E", "label": "E 决策卡（7 张）", "type": "branch", "desc": "带档位+价格+适用边界，可直接拿出跟客户谈", "children": [{"id": "d-ALT-001-中俄跨境电商获客", "label": "决策卡 ALT-001 · 中俄跨境电商获客（VK主力）", "type": "dcard", "desc": "*你做跨境电商/物流/外贸，想找俄罗斯客户 → 这张卡为你准备的。", "file": "cards/ALT-001-中俄跨境电商获客.md"}, {"id": "d-AR-003-顾问式AI架构决策", "label": "AR-003 · 顾问式 AI 架构决策（企业零基础版）", "type": "dcard", "desc": "*客户是完全公司「零 AI 经验」企业（传统制造业/服务业/医疗），来问你「我们 AI 该怎么搞」——这张卡告诉你「先聊什么 + 用什么做样板 + 报价哪一档 + 怎么让客户买单」。", "file": "cards/AR-003-顾问式AI架构决策.md"}, {"id": "d-ENTERPRISE-001-近企业档决策卡", "label": "ENTERPRISE-001 · 近企业档决策卡（多平台 + 多团队 + 审计）", "type": "dcard", "desc": "*你是大公司某个事业部或中大型企业（100+ 人），AI 已经验证过了（POC 完成），现在要规模化生产部署——这张卡告诉你「多平台怎么接 + 多团队怎么分权 + 合规审计怎么过 + 报价多少」。", "file": "cards/ENTERPRISE-001-近企业档决策卡.md"}, {"id": "d-MIGRATE-001-Coze迁移本地化决策卡", "label": "MIGRATE-001 · Coze/Dify 迁移到本地化 AI 决策卡", "type": "dcard", "desc": "*你已经在用 Coze 或 Dify（云端 SaaS 平台），现在想搬到本地（数据可控+成本可控+定制灵活）——这张卡告诉你「迁移路径 / 哪些值得搬 / 哪些保留云端 / 报价多少」。", "file": "cards/MIGRATE-001-Coze迁移本地化决策卡.md"}, {"id": "d-NIF-001-本地化AI商品图工作室", "label": "NIF-001 · 本地化 AI 商品图工作室（启航包档）", "type": "dcard", "desc": "*你做电商，有一堆商品图要处理（白底、抠图、换背景、多角度），想用 AI 又担心云成本+隐私，找到了本地化方案——这张卡告诉你「这条路走得通、报价多少、踩过什么坑」。", "file": "cards/NIF-001-本地化AI商品图工作室.md"}, {"id": "d-RESULT-001-按结果付费决策卡", "label": "RESULT-001 · 按结果付费决策卡（Outcome-based Pricing）", "type": "dcard", "desc": "*你是客户，怕付了钱没效果——你想「按效果付费」（每带来 1 个客户付多少 / 每出 1 单付多少）——这张卡告诉你「按结果付费能不能做、有什么坑、怎么避坑、报价多少」。", "file": "cards/RESULT-001-按结果付费决策卡.md"}, {"id": "d-STARTER-001-启航包档决策卡", "label": "启航包档 · 个人/小团队 AI 落地入门决策卡", "type": "dcard", "desc": "*你是个人或小团队（1-3 人），想做 AI 落地但不确定从哪开始、怕踩坑、预算只有 3-8k——这张卡告诉你「最小可行方案是什么、报价多少、能达到什么效果」。", "file": "cards/STARTER-001-启航包档决策卡.md"}]}, {"id": "F", "label": "F 素材池（原始弹药）", "type": "branch", "desc": "素材 ≠ 结论：对外引用前必须先经方法卡/SOP 验证", "children": [{"id": "F1", "label": "视频库 514 条（10 类）", "type": "pool", "children": [{"id": "v-企业AI落地", "label": "企业AI落地·接单武器", "type": "video", "desc": "23 条视频"}, {"id": "v-智能体·Op", "label": "智能体·OpenClaw·Hermes", "type": "video", "desc": "115 条视频"}, {"id": "v-AI编程工具", "label": "AI编程工具链", "type": "video", "desc": "182 条视频"}, {"id": "v-商业案例·变", "label": "商业案例·变现样板", "type": "video", "desc": "18 条视频"}, {"id": "v-AI内容创作", "label": "AI内容创作", "type": "video", "desc": "41 条视频"}, {"id": "v-自媒体·获客", "label": "自媒体·获客运营", "type": "video", "desc": "19 条视频"}, {"id": "v-效率工具·知", "label": "效率工具·知识管理", "type": "video", "desc": "26 条视频"}, {"id": "v-AI认知·趋", "label": "AI认知·趋势·观点", "type": "video", "desc": "34 条视频"}, {"id": "v-自己的内容资", "label": "自己的内容资产", "type": "video", "desc": "13 条视频"}, {"id": "v-归档·低相关", "label": "归档·低相关", "type": "video", "desc": "43 条视频"}]}, {"id": "F2", "label": "方法簇 111 簇（9 类）", "type": "pool", "children": [{"id": "c-企业AI落地", "label": "企业AI落地·接单武器", "type": "cluster", "desc": "9 簇"}, {"id": "c-智能体·Op", "label": "智能体·OpenClaw·Hermes", "type": "cluster", "desc": "23 簇"}, {"id": "c-AI编程工具", "label": "AI编程工具链", "type": "cluster", "desc": "34 簇"}, {"id": "c-商业案例·变", "label": "商业案例·变现样板", "type": "cluster", "desc": "9 簇"}, {"id": "c-AI内容创作", "label": "AI内容创作", "type": "cluster", "desc": "9 簇"}, {"id": "c-自媒体·获客", "label": "自媒体·获客运营", "type": "cluster", "desc": "7 簇"}, {"id": "c-效率工具·知", "label": "效率工具·知识管理", "type": "cluster", "desc": "7 簇"}, {"id": "c-AI认知·趋", "label": "AI认知·趋势·观点", "type": "cluster", "desc": "7 簇"}, {"id": "c-自己的内容资", "label": "自己的内容资产", "type": "cluster", "desc": "6 簇"}]}, {"id": "F3", "label": "术语词条 239（15 段客户生命周期）", "type": "pool", "desc": "12 关键术语词典；网页里正文名词可点击"}, {"id": "F4", "label": "黄金集 19 场景（评测机制）", "type": "pool", "desc": "golden-v1.1；改完卡跑 eval.py 看召回"}, {"id": "F5", "label": "学习池 22 篇 + raw 37 篇（别人的经验）", "type": "pool", "desc": "FDE 六阶段速查手册 / 全网资料全景图 等"}]}, {"id": "G", "label": "G 学习与调度（15 场景路由）", "type": "branch", "desc": "什么情况查什么、为什么 —— Agent 干活的成文规则", "children": [{"id": "43", "label": "43 Agent 调度规则 v1（15 场景）", "type": "doc", "file": "成长系统/43_Agent调度规则_v1.md", "children": [{"id": "r1", "label": "客户刚来、说不清要什么", "type": "rule", "desc": "查：**38 SOP-1 PSF 三关** + `REQ-001` + requirement-clarifier｜因为：先杀错误问题——95% 项目死在做错的问题上（MIT）", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r2", "label": "客户说「要上 AI」但需求空泛", "type": "rule", "desc": "查：**39 方法 1.6 反 AI 幻觉提问清单**｜因为：6 个问题戳破伪需求，避免承诺做不到的事", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r3", "label": "要报价 / 客户嫌贵", "type": "rule", "desc": "查：**39 方法 1.3 价值导向报价** + 决策卡 7 张 + 34 轨 C ROI｜因为：按「省多少钱」报不按工时报；McKinsey 双段 ROI 撑腰", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r4", "label": "不知道选什么技术/载体", "type": "rule", "desc": "查：**25 阶段 3 载体门** + `23 交付载体怎么选` + `ECO-001`｜因为：载体决策树 + 合规预审，别拍脑袋", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r5", "label": "开始做一个项目", "type": "rule", "desc": "查：**总图主轴** → 定位阶段 → 看该段武器｜因为：一张图定位「我在哪、下一步交付什么」", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r6", "label": "做 POC / 试点", "type": "rule", "desc": "查：**38 SOP-2 MVD** + `POC-001` + 25 阶段 4-5｜因为：周级节奏证明价值，别掉进「概念验证坟墓」", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r7", "label": "要验收 / 客户要证据", "type": "rule", "desc": "查：**25 的 9 个质量门禁** + `EVAL-001/004` + 34 轨 C TRiSM｜因为：每关有签字物；治理框架让客户放心", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r8", "label": "上线后出故障", "type": "rule", "desc": "查：**38 SOP-5 热修复文化** + `REL-001` + `CRISIS-001`｜因为：按小时计修复 + 战情室，先止血再归因", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r9", "label": "客户要续约 / 谈续约", "type": "rule", "desc": "查：**`RESULT-001`** + `MLOPS-001` + 34 轨 C NDR｜因为：持续可见指标=续约筹码", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r10", "label": "项目要复盘 / 沉淀", "type": "rule", "desc": "查：**38 SOP-8 经验资产化** + `ITER-001` + 复盘区模板｜因为：从 1 到 N 的飞轮；不复盘=每次从零开始", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r11", "label": "要规模化复制到 N 客户", "type": "rule", "desc": "查：**38 SOP-7 灯塔筛选** + 黄金集 + `AGENT_PROTOCOL`｜因为：只复制被验证过的打法", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r12", "label": "要找具体某个知识点", "type": "rule", "desc": "查：**词条 239（12 术语词典）** → 命中后跳方法卡｜因为：名词归 15 段客户生命周期，查得到", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r13", "label": "要学别人的经验", "type": "rule", "desc": "查：**39 主表 + 40 补缺 + 视频库**｜因为：111 簇 + 64 条精读是提炼过的原料", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r14", "label": "要对外证明专业度", "type": "rule", "desc": "查：**34 + 调研2 三份 + 36 MECE**｜因为：一手权威带 URL，可当场出示", "file": "成长系统/43_Agent调度规则_v1.md"}, {"id": "r15", "label": "要做数据/合规判断", "type": "rule", "desc": "查：**`DATA-001`** + `COMP-001` + ISO 42001 + 34 轨 C｜因为：PII 三分类 + 影响评估，红线不碰", "file": "成长系统/43_Agent调度规则_v1.md"}]}, {"id": "05", "label": "05 顾问学习路线 v1", "type": "doc", "file": "成长系统/05_顾问学习路线_v1.md"}, {"id": "29", "label": "29 学习方向六条", "type": "doc", "file": "成长系统/29_学习方向六条_v1.md"}, {"id": "06", "label": "06 接客户前自问清单", "type": "doc", "file": "成长系统/06_接客户前自问清单.md"}, {"id": "07", "label": "07 项目复盘清单", "type": "doc", "file": "成长系统/07_项目复盘清单.md"}]}]};
-var COLORS = {root:"#5b93ff",branch:"#7da2ff",stage:"#8ab0ff",doc:"#3fd68c",sop:"#7fb0ff",method:"#9aa7bd",
- gap:"#f5b544",fcard:"#6fa8dc",dcard:"#c084fc",pool:"#57a8b5",video:"#57a8b5",cluster:"#57a8b5",
- rule:"#a78bfa",gate:"#f5b544",dom:"#8b93a3",cat39:"#8b93a3",leaf:"#8b93a3",dflt:"#8b93a3"};
+var COLORS = {root:"#0a84ff",branch:"#0a84ff",stage:"#0a84ff",doc:"#30d158",sop:"#409cff",method:"#8e8e93",
+ gap:"#ff9f0a",fcard:"#40c8e0",dcard:"#bf5af2",pool:"#40c8e0",video:"#40c8e0",cluster:"#40c8e0",
+ rule:"#bf5af2",gate:"#ff9f0a",dom:"#8e8e93",cat39:"#8e8e93",leaf:"#8e8e93",dflt:"#8e8e93"};
 var TYPELABEL = {root:"总入口",branch:"一级板块",stage:"落地阶段",doc:"方法论文档",sop:"SOP 流程",
  method:"实战方法",gap:"补缺经验",fcard:"方法卡",dcard:"决策卡",pool:"素材池",video:"视频类目",
  cluster:"方法簇",rule:"调度场景",gate:"质量门禁",dom:"方法卡域",cat39:"方法类目",leaf:"要点"};
@@ -205,12 +271,14 @@ function render(){
     var n = nd.n;
     var g = el("g", {class:"node n-" + n.type + (sel && sel.id === n.id ? " sel" : "")});
     g.setAttribute("transform", "translate(" + nd.x + "," + nd.y + ")");
-    g.appendChild(el("rect", {class:"box", x:0, y:0, width:nd.w, height:NH, rx:8}));
-    var t = el("text", {class:"lab", x:11, y:19});
+    g.appendChild(el("rect", {class:"box", x:0, y:0, width:nd.w, height:NH, rx:11}));
+    g.appendChild(el("rect", {class:"acc", x:3, y:7, width:3, height:NH-14, rx:1.5,
+      fill:(COLORS[n.type] || COLORS.dflt), opacity:.9}));
+    var t = el("text", {class:"lab", x:15, y:19});
     t.textContent = trunc(n.label, Math.floor((nd.w-30)/6.6));
     g.appendChild(t);
     if(n.badge){
-      var b = el("text", {class:"sub", x:11, y:29});
+      var b = el("text", {class:"sub", x:15, y:29});
       b.textContent = n.badge;
       g.appendChild(b);
     }
@@ -237,59 +305,108 @@ function toggle(id){
   render(); if(sel) drawSide(sel);
 }
 
-/* ---------- 交互: 缩放/平移 ---------- */
+/* ---------- 交互: 缩放/平移 (鼠标 + 触摸) ---------- */
 var cv = document.getElementById("canvas");
+function zoomAt(mx, my, f){
+  var nk = Math.max(0.12, Math.min(3.2, k * f));
+  tx = mx - (mx - tx) * (nk / k); ty = my - (my - ty) * (nk / k); k = nk; applyT();
+}
 cv.addEventListener("wheel", function(e){
   e.preventDefault();
-  var r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
-  var f = e.deltaY < 0 ? 1.12 : 1/1.12;
-  var nk = Math.max(0.18, Math.min(3.2, k * f));
-  tx = mx - (mx - tx) * (nk/k); ty = my - (my - ty) * (nk/k); k = nk;
-  applyT();
+  var r = cv.getBoundingClientRect();
+  zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.12 : 1/1.12);
 }, {passive:false});
-var dragging = false, sx = 0, sy = 0, stx = 0, sty = 0, moved = false;
+/* 鼠标拖拽 */
+var dragging = false, sx = 0, sy = 0, stx = 0, sty = 0;
 cv.addEventListener("mousedown", function(e){
   if(e.target.closest(".node")) return;
-  dragging = true; moved = false; sx = e.clientX; sy = e.clientY; stx = tx; sty = ty; cv.classList.add("drag");
+  dragging = true; sx = e.clientX; sy = e.clientY; stx = tx; sty = ty; cv.classList.add("drag");
 });
 window.addEventListener("mousemove", function(e){
   if(!dragging) return;
-  var dx = e.clientX - sx, dy = e.clientY - sy;
-  if(Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
-  tx = stx + dx; ty = sty + dy; applyT();
+  tx = stx + (e.clientX - sx); ty = sty + (e.clientY - sy); applyT();
 });
 window.addEventListener("mouseup", function(){ dragging = false; cv.classList.remove("drag"); });
-function zoom(f){
-  var r = cv.getBoundingClientRect(), mx = r.width/2, my = r.height/2;
-  var nk = Math.max(0.12, Math.min(3.2, k * f));
-  tx = mx - (mx - tx) * (nk/k); ty = my - (my - ty) * (nk/k); k = nk; applyT();
-}
+/* 触摸: 单指平移 + 双指捏合缩放(手机/平板) */
+var touching = false, pinchD = 0, pinchK = 1;
+function tdist(t){ return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+cv.addEventListener("touchstart", function(e){
+  if(e.target.closest(".node")) return;
+  if(e.touches.length === 1){
+    touching = true; pinchD = 0;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; stx = tx; sty = ty;
+  } else if(e.touches.length === 2){
+    touching = true; pinchD = tdist(e.touches); pinchK = k;
+    sx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    sy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    stx = tx; sty = ty;
+  }
+}, {passive:true});
+cv.addEventListener("touchmove", function(e){
+  if(!touching) return;
+  e.preventDefault();
+  var r = cv.getBoundingClientRect();
+  if(e.touches.length === 1 && pinchD === 0){
+    tx = stx + (e.touches[0].clientX - sx); ty = sty + (e.touches[0].clientY - sy); applyT();
+  } else if(e.touches.length === 2 && pinchD > 0){
+    var d = tdist(e.touches);
+    var cx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left;
+    var cy = (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top;
+    var nk = Math.max(0.12, Math.min(3.2, pinchK * (d / pinchD)));
+    var pk = k; k = nk;
+    tx = cx - (cx - tx) * (nk / pk); ty = cy - (cy - ty) * (nk / pk); applyT();
+  }
+}, {passive:false});
+cv.addEventListener("touchend", function(e){
+  if(e.touches.length === 0){ touching = false; pinchD = 0; }
+  else if(e.touches.length === 1){
+    pinchD = 0;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; stx = tx; sty = ty;
+  }
+}, {passive:true});
+function zoom(f){ var r = cv.getBoundingClientRect(); zoomAt(r.width/2, r.height/2, f); }
 document.getElementById("bIn").onclick = function(){ zoom(1.25); };
 document.getElementById("bOut").onclick = function(){ zoom(0.8); };
-function fit(){
-  var xs = layoutNodes.map(function(n){ return [n.x, n.x + n.w]; });
-  var ys = layoutNodes.map(function(n){ return [n.y, n.y + NH]; });
-  if(!xs.length) return;
-  var minX = Math.min.apply(null, xs.map(function(a){return a[0];})),
-      maxX = Math.max.apply(null, xs.map(function(a){return a[1];})),
-      minY = Math.min.apply(null, ys.map(function(a){return a[0];})),
-      maxY = Math.max.apply(null, ys.map(function(a){return a[1];}));
+/* 取景: 把一组节点框进视野 */
+function contentBox(nodes){
+  if(!nodes.length) return null;
+  return {
+    x0: Math.min.apply(null, nodes.map(function(a){ return a.x; })),
+    x1: Math.max.apply(null, nodes.map(function(a){ return a.x + a.w; })),
+    y0: Math.min.apply(null, nodes.map(function(a){ return a.y; })),
+    y1: Math.max.apply(null, nodes.map(function(a){ return a.y + NH; })),
+    w: 0, h: 0
+  };
+}
+function frameBox(b, maxK, minK){
+  if(!b) return;
+  b.w = b.x1 - b.x0; b.h = b.y1 - b.y0;
   var r = cv.getBoundingClientRect();
-  k = Math.min((r.width-80)/(maxX-minX+1), (r.height-80)/(maxY-minY+1), 1.15);
-  if(k < 0.22) k = 0.22;
-  tx = 40 - minX*k + Math.max(0, (r.width-80-(maxX-minX)*k)/2);
-  ty = 40 - minY*k + Math.max(0, (r.height-80-(maxY-minY)*k)/2);
+  var pad = (r.width < 900 ? 24 : 70);
+  k = Math.max(minK, Math.min(maxK, Math.min((r.width - pad*2)/(b.w+1), (r.height - pad*2)/(b.h+1))));
+  tx = pad + (r.width - pad*2 - b.w*k)/2 - b.x0*k;
+  ty = pad + (r.height - pad*2 - b.h*k)/2 - b.y0*k;
   applyT();
 }
+function fit(){ frameBox(contentBox(layoutNodes), 1.15, 0.22); }
 document.getElementById("bFit").onclick = fit;
-function setAll(v){ collapsed = {}; if(v){ (function w(n){ (n.children||[]).forEach(function(c){ collapsed[c.id]=true; if(c.children&&c.children.length) w(c); }); })(DATA); } render(); if(sel) drawSide(sel); }
+function setAll(v){
+  collapsed = {};
+  if(v){ (function w(n){ (n.children||[]).forEach(function(c){ collapsed[c.id] = true; if(c.children && c.children.length) w(c); }); })(DATA); }
+  render(); if(sel) drawSide(sel);
+}
 document.getElementById("bExpand").onclick = function(){ setAll(false); fit(); };
 document.getElementById("bCollapse").onclick = function(){ setAll(true); fit(); };
 
 /* ---------- 侧栏 ---------- */
+function closeSide(){
+  document.getElementById("side").classList.remove("on");
+  document.getElementById("sideMask").classList.remove("on");
+}
 function drawSide(n){
   sel = n;
   document.getElementById("side").classList.add("on");
+  if(window.innerWidth <= 900) document.getElementById("sideMask").classList.add("on");
   document.getElementById("sBadge").textContent = TYPELABEL[n.type] || n.type;
   document.getElementById("sTitle").textContent = n.label;
   document.getElementById("sDesc").innerHTML = n.desc ? "<p>" + n.desc.replace(/·/g, " · ") + "</p>" : "";
@@ -323,22 +440,8 @@ function pick(n, nd){
 function fitToSub(n, nd){
   var ids = {}; (function w(x){ ids[x.id] = true; visibleKids(x).forEach(w); })(n);
   var sub = layoutNodes.filter(function(a){ return ids[a.n.id]; });
-  if(!sub.length){ return; }
-  var r = cv.getBoundingClientRect();
-  var minX = Math.min.apply(null, sub.map(function(a){ return a.x; })),
-      maxX = Math.max.apply(null, sub.map(function(a){ return a.x + a.w; })),
-      minY = Math.min.apply(null, sub.map(function(a){ return a.y; })),
-      maxY = Math.max.apply(null, sub.map(function(a){ return a.y + NH; }));
-  var pad = 60;
-  var kk = Math.min((r.width - pad*2) / (maxX - minX + 1), (r.height - pad*2) / (maxY - minY + 1), 1.25);
-  k = Math.max(0.3, Math.min(1.25, kk));
-  tx = pad + (r.width - pad*2 - (maxX-minX)*k)/2 - minX*k;
-  ty = pad + (r.height - pad*2 - (maxY-minY)*k)/2 - minY*k;
-  // 标题留在视野内(节点本身在左侧)
-  if(nd){ ty += 0; }
-  applyT();
+  frameBox(contentBox(sub), 1.25, 0.34);
 }
-
 /* ---------- 原文 modal (极简 markdown 渲染) ---------- */
 function md2html(md){
   var L = md.split("\n"), out = [], i = 0, inCode = false, codeBuf = [];
@@ -388,8 +491,12 @@ function md2html(md){
   return out.join("\n");
 }
 function openDoc(file, anchor, title){
-  document.getElementById("modal").classList.add("on");
   document.getElementById("mtitle").textContent = title || file;
+  document.getElementById("modal").classList.add("on");
+  if(!modalOn){
+    modalOn = true;
+    try { history.pushState({__doc:1}, ""); } catch(e){}
+  }
   var bd = document.getElementById("mbd");
   bd.innerHTML = "<p style='color:#98a1b0'>加载中… " + file + "</p>";
   fetch("obs/" + file.split("/").map(encodeURIComponent).join("/")).then(function(r){
@@ -412,8 +519,28 @@ function openDoc(file, anchor, title){
     bd.innerHTML = "<p style='color:#ff6b6b'>原文加载失败：" + e.message + "</p><p style='color:#98a1b0'>文件：" + file + "</p>";
   });
 }
-document.getElementById("mclose").onclick = function(){ document.getElementById("modal").classList.remove("on"); };
-document.getElementById("modal").onclick = function(e){ if(e.target.id === "modal") this.classList.remove("on"); };
+/* 弹层开关 = 接浏览器返回键(手机上按返回=关弹层, 不是退出页面) */
+var modalOn = false;
+function hideDoc(){
+  document.getElementById("modal").classList.remove("on");
+  modalOn = false;
+}
+function closeDoc(){
+  hideDoc();                                        // 立即关闭(不等异步 popstate)
+  if(history.state && history.state.__doc){         // 再清掉这次 push 的历史, 免得返回键要按两次
+    try { history.back(); } catch(e){}
+  }
+}
+document.getElementById("mback").onclick = closeDoc;
+document.getElementById("modal").onclick = function(e){ if(e.target.id === "modal") closeDoc(); };
+document.getElementById("sideMask").onclick = closeSide;
+window.addEventListener("popstate", function(){
+  if(modalOn){ hideDoc(); return; }
+  if(document.getElementById("side").classList.contains("on")) closeSide();
+});
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape" && modalOn) closeDoc();
+});
 
 /* ---------- 三层视角 ---------- */
 document.getElementById("bD3").onclick = function(){
@@ -460,9 +587,9 @@ q.addEventListener("input", function(){
 
 /* ---------- 图例 ---------- */
 document.getElementById("leg").innerHTML =
- '<div style="margin-bottom:4px"><b>图例</b></div>' +
- ['branch|一级板块','stage|落地阶段','doc|方法论','sop|SOP','method|实战方法','gap|补缺','fcard|方法卡','dcard|决策卡','rule|调度规则','pool|素材池']
- .map(function(x){ var p = x.split("|"); return '<div><i style="background:' + (COLORS[p[0]]||"#888") + '"></i>' + p[1] + '</div>'; }).join("");
+ '<div style="margin-bottom:6px"><b>图例</b></div>' +
+ [['branch','板块'],['stage','阶段'],['doc','方法论'],['sop','SOP'],['method','方法'],['gap','补缺'],['fcard','方法卡'],['dcard','决策卡'],['rule','调度'],['pool','素材']]
+ .map(function(x){ return '<div><i style="background:' + (COLORS[x[0]]||"#8e8e93") + '"></i>' + x[1] + '</div>'; }).join("");
 
 /* ---------- 启动 ---------- */
 // 默认: 只展开「总根 + 一级板块」，其余收起(保证一屏能看清)；点节点逐层钻取
