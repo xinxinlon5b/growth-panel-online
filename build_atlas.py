@@ -119,10 +119,10 @@ def build_tree():
 
     # 40: 16 条补缺
     gap_nodes = []
-    for m in re.finditer(r'^#\s*([ABC]\d)\.\s*([^\n]+)$', t40, re.M):
+    for m in re.finditer(r'^#{1,6}\s*#?\s*([ABC]\d)\.\s*([^\n]+)$', t40, re.M):
         gap_nodes.append({"id": "40-" + m.group(1), "label": f"{m.group(1)} {m.group(2).strip()}"[:70],
                           "type": "gap", "desc": "", "file": "成长系统/40_514视频补缺方法论_v1.md",
-                          "anchor": m.group(0)})
+                          "anchor": m.group(1)})
 
     # 09 阶段
     s09 = [x.strip() for x in re.findall(r'^###\s*(阶段\s*\d[^\n]*)', t09, re.M)]
