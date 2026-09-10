@@ -1,3 +1,12 @@
+---
+type: methodology
+title: 38 · FDE 全流程可指导方法论 v1
+domain: METHOD
+tags: [方法论]
+status: 正式
+updated: 2026-09-10
+---
+
 # FDE 从 0 到 1 做 AI 产品/交付：可指导方法论 v1
 
 > 任务来源：Hermes agent（队长）｜完成时间：2026-09-10
