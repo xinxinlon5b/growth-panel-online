@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>企业AI落地 · 全景总图 v1</title>
+<style>
+:root{
+  --bg:#0b0c0f; --panel:#14161b; --panel2:#1b1e25; --line:#282c35;
+  --txt:#f2f4f8; --dim:#9aa3b2; --dim2:#6b7280;
+  --blue:#4d8dff; --cyan:#38d9e8; --green:#3fd68c; --amber:#f5b544; --red:#ff6b6b; --violet:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","SF Pro Display",sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:34px 22px 90px}
+/* header */
+.hero{background:linear-gradient(160deg,#171a21 0%,#0e1015 60%);border:1px solid var(--line);border-radius:22px;padding:34px 32px;margin-bottom:26px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;inset:0;background:radial-gradient(700px 220px at 85% -12%,rgba(77,141,255,.22),transparent 70%);pointer-events:none}
+.kicker{font-size:11.5px;letter-spacing:.22em;color:var(--blue);text-transform:uppercase;margin-bottom:12px;font-weight:700}
+h1{font-size:31px;font-weight:700;letter-spacing:-.5px;margin-bottom:10px}
+.sub{color:var(--dim);font-size:14.5px;max-width:760px}
+.nums{display:flex;gap:26px;flex-wrap:wrap;margin-top:22px;position:relative}
+.num b{display:block;font-size:25px;font-weight:700;background:linear-gradient(135deg,#fff,#9ec3ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15}
+.num span{font-size:11.5px;color:var(--dim2);letter-spacing:.05em}
+/* generic card */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:20px}
+.card h2{font-size:18px;margin-bottom:6px;display:flex;align-items:center;gap:9px}
+.card h2 .badge{font-size:10.5px;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:999px;background:rgba(77,141,255,.15);color:var(--blue);border:1px solid rgba(77,141,255,.3)}
+.lead{color:var(--dim);font-size:13.5px;margin-bottom:18px}
+h3{font-size:14.5px;margin:22px 0 10px;color:var(--txt)}
+/* verdict banner */
+.verdict{border:1px solid rgba(245,181,68,.35);background:linear-gradient(150deg,rgba(245,181,68,.1),rgba(245,181,68,.02));border-radius:18px;padding:22px 24px;margin-bottom:20px}
+.verdict h2{font-size:17px;color:var(--amber);margin-bottom:12px}
+.vrow{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:13.5px}
+.vrow:last-child{border-bottom:none}
+.vtag{flex:0 0 92px;font-weight:700;font-size:12px}
+.vtag.ok{color:var(--green)} .vtag.no{color:var(--red)} .vtag.half{color:var(--amber)}
+/* map table */
+table{width:100%;border-collapse:collapse;font-size:12.8px}
+th{text-align:left;padding:9px 10px;background:var(--panel2);color:var(--dim);font-weight:600;font-size:11.5px;letter-spacing:.06em;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+tr:hover td{background:rgba(255,255,255,.022)}
+code{background:rgba(255,255,255,.07);padding:1.5px 6px;border-radius:5px;font-size:11.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe1ff}
+.pill{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:6px;font-weight:600;white-space:nowrap}
+.p1{background:rgba(63,214,140,.14);color:var(--green)}
+.p2{background:rgba(77,141,255,.14);color:var(--blue)}
+.p3{background:rgba(245,181,68,.14);color:var(--amber)}
+.p4{background:rgba(167,139,250,.16);color:var(--violet)}
+/* master timeline */
+.tl{margin-top:8px}
+.tlrow{display:grid;grid-template-columns:150px 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,.06)}
+.tlrow:first-child{border-top:1px solid rgba(255,255,255,.06)}
+.tlrow:hover{background:rgba(255,255,255,.022)}
+.tlstage{padding:16px 14px;border-right:1px solid rgba(255,255,255,.07)}
+.tlstage .n{font-size:10.5px;color:var(--blue);font-weight:700;letter-spacing:.12em}
+.tlstage .t{font-size:14px;font-weight:600;margin-top:3px}
+.tlbody{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tlcell .lab{font-size:10.5px;color:var(--dim2);letter-spacing:.1em;font-weight:700;margin-bottom:4px}
+.tlcell .val{font-size:12.6px;color:#dfe4ec}
+.tlwide{grid-column:1/-1}
+.src{font-size:11.5px;color:var(--dim2);border-left:2px solid var(--line);padding-left:9px;margin-top:7px}
+/* atlas */
+.atlas{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.abox{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:16px}
+.abox .hh{font-size:13.5px;font-weight:700;margin-bottom:5px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.abox .dd{font-size:12.2px;color:var(--dim);margin-bottom:8px}
+.abox .mm{font-size:11.3px;color:var(--dim2)}
+.master{border-color:rgba(77,141,255,.45);background:linear-gradient(150deg,rgba(77,141,255,.1),var(--panel2))}
+/* flow */
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;font-size:12.5px}
+.fnode{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.farrow{color:var(--dim2)}
+.foot{color:var(--dim2);font-size:11.5px;margin-top:26px;text-align:center;line-height:1.9}
+@media(max-width:860px){
+  .tlbody{grid-template-columns:1fr}.atlas{grid-template-columns:1fr}
+  .tlrow{grid-template-columns:1fr}.tlstage{border-right:none;border-bottom:1px solid rgba(255,255,255,.07)}
+  h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="kicker">Master Map · 唯一总入口</div>
+    <h1>企业 AI 落地 · 全景总图</h1>
+    <p class="sub">一张图回答：我们有<b>几张地图</b>、每张<b>什么内容</b>、<b>为什么这么设计</b>、<b>出处权威吗</b>、以及<b>做项目时该看哪张</b>。三张视角图 + 四份方法论 + 素材池，全部挂到一条主轴上。</p>
+    <div class="nums">
+      <div class="num"><b>3</b><span>视角地图（业务/工程/权威）</span></div>
+      <div class="num"><b>4</b><span>方法论（8 SOP+58 法+16 补缺+MECE）</span></div>
+      <div class="num"><b>25+7</b><span>方法卡 + 决策卡</span></div>
+      <div class="num"><b>514</b><span>素材视频（111 簇 / 239 词）</span></div>
+      <div class="num"><b>12</b><span>工程阶段 × 9 质量门禁</span></div>
+    </div>
+  </div>
+
+  <!-- 判断 -->
+  <div class="verdict">
+    <h2>⚖️ 客观判断（先说结论）</h2>
+    <div class="vrow"><div class="vtag ok">素材层 · 做到了</div><div>514 视频 → 111 方法簇 → 58+16 条可指导方法（38/39/40）——<b>抽丝剥茧是真的做了</b>，不是堆料。</div></div>
+    <div class="vrow"><div class="vtag ok">方法论层 · 做到了</div><div>25 张方法卡 + 7 张决策卡 + 8 条 SOP + 58 条实招 + 16 条补缺 + 239 词条——<b>能查、能复用</b>。</div></div>
+    <div class="vrow"><div class="vtag no">收口层 · 没做到</div><div><b>这就是你困惑的根源</b>：库里躺着 <b>10 个名字带「全景/地图/MECE」的文档</b>，其中 3 个是真地图（09 业务 / 25 工程 / 34 权威），但它们<b>三代演进、各写各的、没有一张总图把它们收敛</b>。你找不到「有几个图」是因为<b>从来没做过这个收口</b>。</div></div>
+    <div class="vrow"><div class="vtag half">权威性 · 一半</div><div>34/36/41 + 三份「调研2」<b>是一手权威</b>（Palantir/OpenAI/Anthropic + Gartner/McKinsey/信通院 + AWS/Azure/GCP/ISO，URL 已验证）。但 09（9/3）与 25（9/9）源头是<b>二手/通用标准</b>，未经权威化；38 号 FDE 方法论源头仍是「范冰书+B站教程」——<b>正是你 9/10 否定过的那批源</b>。</div></div>
+    <div class="vrow"><div class="vtag no">指路规则 · 没有</div><div>「什么情况用哪个 SOP、为什么」<b>没有成文规则</b>——全靠记忆和临场判断。这就是你说「模糊」的原因。</div></div>
+  </div>
+
+  <!-- 图鉴 -->
+  <div class="card">
+    <h2>🗺️ 图鉴：库里到底有几张「地图」<span class="badge">10 个候选 · 3 个真地图</span></h2>
+    <p class="lead">下面这张表把库里所有名字含「全景 / 地图 / MECE」的文档一次摊开——你之前找不到答案，是因为没人列过这张表。</p>
+    <table>
+      <tr><th>文档</th><th>是什么</th><th>真地图？</th><th>来源</th><th>状态</th></tr>
+      <tr><td><code>09 全流程关卡地图</code></td><td>业务侧 7 阶段 40 关卡（接客户→规模化）</td><td><span class="pill p2">✅ 地图①</span></td><td>FDE 六阶段 + 项目实战（二手）</td><td>网页可视化已上线</td></tr>
+      <tr><td><code>25 程序工程全景</code></td><td>工程侧 12 阶段 + 9 门禁 + 7 角色</td><td><span class="pill p2">✅ 地图②</span></td><td>SDLC/12-Factor/MLOps/OWASP/DDD/Phase-Gate（通用标准）</td><td>v2</td></tr>
+      <tr><td><code>34 全景地图 v2</code></td><td>三轨合流：卖/交付 × 买/治理 × 工程标准</td><td><span class="pill p1">✅ 地图③（权威版）</span></td><td>Palantir/OpenAI/Anthropic + Gartner/麦肯锡/信通院 + 云厂/ISO</td><td>9/10 定稿</td></tr>
+      <tr><td><code>03 全景框架与功能缺口</code></td><td>网页系统功能盘点（不是知识地图）</td><td><span class="pill p3">系统文档</span></td><td>自建</td><td>9/3</td></tr>
+      <tr><td><code>20 载体全景+程序MECE</code></td><td>载体选型 + 程序全流程（调研报告）</td><td><span class="pill p3">调研稿</span></td><td>双 agent 调研</td><td>9/9</td></tr>
+      <tr><td><code>28 库脑脸三层蓝图</code></td><td>系统架构分工（不是知识地图）</td><td><span class="pill p3">系统文档</span></td><td>自建</td><td>9/9</td></tr>
+      <tr><td><code>35 素材全景挂载</code></td><td>素材 → 全景段的挂载表</td><td><span class="pill p4">索引</span></td><td>自建</td><td>9/10</td></tr>
+      <tr><td><code>36 权威调研MECE</code></td><td>三轨为什么不重不漏</td><td><span class="pill p4">证明</span></td><td>调研2 三份</td><td>9/10</td></tr>
+      <tr><td><code>41 方法论三件套MECE</code></td><td>38/39/40 的关系</td><td><span class="pill p4">证明</span></td><td>本轮</td><td>9/10</td></tr>
+      <tr><td><code>学习池/全网资料全景图</code></td><td>外部信息源清单（网站/书/GitHub）</td><td><span class="pill p3">素材清单</span></td><td>3 路子代理实测</td><td>9/8</td></tr>
+    </table>
+    <div class="flow" style="margin-top:16px">
+      <span class="fnode" style="border-color:rgba(255,255,255,.12)">09 业务（9/3）</span><span class="farrow">→</span>
+      <span class="fnode" style="border-color:rgba(255,255,255,.12)">25 工程（9/9，补工程侧）</span><span class="farrow">→</span>
+      <span class="fnode" style="border-color:rgba(77,141,255,.45);color:#9ec3ff">34 权威（9/10，换一手源）</span>
+      <span class="farrow" style="margin-left:6px">= 三代演进，但从未收口</span>
+    </div>
+  </div>
+
+  <!-- 总图 -->
+  <div class="card master" style="border-color:rgba(77,141,255,.4)">
+    <h2>🧭 总图：一条主轴 × 三个视角<span class="badge">这就是「完整的那一张」</span></h2>
+    <p class="lead">把 09 的业务段、25 的工程段、34 的权威出处<b>对齐到同一条时间轴</b>——每一行都是一个落地阶段，横着看业务在干什么、工程在干什么、依据是什么、手里有什么武器。</p>
+    <div class="tl" id="tl"></div>
+  </div>
+
+  <!-- 设计理由 -->
+  <div class="card">
+    <h2>💡 为什么这么设计（理由 + 溯源）</h2>
+    <h3>1 · 为什么要三张视角图，而不是一张</h3>
+    <p class="lead" style="margin-bottom:10px">因为「企业 AI 落地」本身有<b>三种不可合并的问法</b>，一张图回答不了三个问题：</p>
+    <table>
+      <tr><th>视角</th><th>回答的问题</th><th>主人是谁</th><th>为什么必须单独成图</th></tr>
+      <tr><td><span class="pill p2">业务</span> 09</td><td>客户从哪来、怎么谈、怎么交付、怎么续约</td><td>你（老板/FDE）</td><td>决定「这单接不接、什么时候收钱」</td></tr>
+      <tr><td><span class="pill p2">工程</span> 25</td><td>东西怎么做出来、质量怎么保证</td><td>工程师视角</td><td>决定「能不能按时交、会不会翻车」</td></tr>
+      <tr><td><span class="pill p1">权威</span> 34</td><td>每句话的出处是哪家原厂/机构/标准</td><td>对客户/对自己</td><td>决定「凭什么信你、凭什么报价」</td></tr>
+    </table>
+    <p class="lead" style="margin-top:12px">三者<b>互斥</b>（问法不同、主人不同、用途不同），<b>合起来穷尽</b>（接单→做出来→证明专业，没有第四件事）。这就是 MECE。</p>
+
+    <h3>2 · 每张图的溯源（是不是真权威）</h3>
+    <table>
+      <tr><th>图</th><th>源头</th><th>权威等级</th><th>证据</th></tr>
+      <tr><td>09 业务</td><td>FDE 社区书 + 自建项目实战</td><td><span class="pill p3">二手（待升级）</span></td><td>内容可用，但源头非原厂</td></tr>
+      <tr><td>25 工程</td><td>SDLC(AWS) / 12-Factor / MLOps(MS) / OWASP LLM / DDD / Phase-Gate</td><td><span class="pill p2">通用标准（可用）</span></td><td>均为公开成熟标准</td></tr>
+      <tr><td>34 权威</td><td>Palantir / OpenAI / Anthropic / Gartner / McKinsey / BCG / MIT / 信通院 / AWS / Azure / GCP / TOGAF 10 / PMBOK 8 / ISO 42001</td><td><span class="pill p1">一手权威 ✅</span></td><td>10+ URL 抽查全通 + 引用逐字吻合（R5 验证）</td></tr>
+    </table>
+    <p class="lead" style="margin-top:12px">诚实说：<b>「权威」目前只有 34 这一条线做到了</b>。09/25 是早期产物，内容和逻辑没问题，但源头不是原厂——这就是下一步要补的（见底部行动）。</p>
+
+    <h3>3 · 素材怎么挂到图上（不是散着的）</h3>
+    <div class="flow">
+      <span class="fnode">514 视频</span><span class="farrow">→</span>
+      <span class="fnode">111 方法簇</span><span class="farrow">→</span>
+      <span class="fnode">58 条实招（39）+ 16 条补缺（40）</span><span class="farrow">→</span>
+      <span class="fnode" style="border-color:rgba(63,214,140,.4)">挂到总图各阶段 → 做项目时直接取用</span>
+    </div>
+    <div class="flow">
+      <span class="fnode">FDE 教程 41 文件</span><span class="farrow">→</span>
+      <span class="fnode">8 条 SOP（38）</span><span class="farrow">→</span>
+      <span class="fnode" style="border-color:rgba(63,214,140,.4)">接单/交付时照做</span>
+    </div>
+  </div>
+
+  <!-- 规则 -->
+  <div class="card">
+    <h2>🤖 用图规则：什么情况 → 看哪张 → 为什么</h2>
+    <p class="lead">这就是你说的「以后 agent 调度 obsidian 工作的条件和规则」。<b>成文版在 <code>43_Agent调度规则_v1.md</code></b>，这里给你最常用的 8 条：</p>
+    <table>
+      <tr><th>什么情况</th><th>查什么</th><th>为什么</th></tr>
+      <tr><td>客户刚来、说不清要什么</td><td><b>38 SOP-1 PSF 三关</b> + <code>REQ-001</code></td><td>先杀错误问题——95% 项目死在做错的问题上（MIT）</td></tr>
+      <tr><td>要报价 / 客户嫌贵</td><td><b>39 方法 1.3 价值导向报价</b> + 决策卡 7 张 + 34 轨 C ROI</td><td>按「省多少钱」报，不按工时报；有权威 ROI 算法撑腰</td></tr>
+      <tr><td>不知道选什么技术/载体</td><td><b>25 阶段 3 载体门</b> + <code>23 交付载体怎么选</code> + <code>ECO-001</code></td><td>载体决策有决策树 + 合规预审，别拍脑袋</td></tr>
+      <tr><td>开始做一个项目</td><td><b>总图主轴</b>（本文档）→ 定位在哪一阶段 → 看该段武器</td><td>一张图定位「我现在在哪、下一步交付什么」</td></tr>
+      <tr><td>做 POC / 试点</td><td><b>38 SOP-2 MVD</b> + <code>POC-001</code> + 25 阶段 4-5（数据门/评测门）</td><td>周级节奏证明价值，别掉进「概念验证坟墓」</td></tr>
+      <tr><td>要验收 / 客户要证据</td><td><b>25 的 9 个质量门禁</b> + <code>EVAL-001/004</code> + 34 轨 C TRiSM</td><td>每关有签字物；治理框架让客户放心</td></tr>
+      <tr><td>项目要复盘 / 沉淀</td><td><b>38 SOP-8 经验资产化</b> + <code>ITER-001</code> + 复盘区模板</td><td>从 1 到 N 的飞轮；不复盘 = 每次都从零开始</td></tr>
+      <tr><td>要找具体某个知识点</td><td><b>词条 239（12 术语词典）</b> → 命中后跳方法卡</td><td>名词归 15 段客户生命周期，查得到</td></tr>
+    </table>
+    <p class="lead" style="margin-top:14px"><b>路由总原则</b>：<span class="pill p2">要判断</span> 查决策卡 →  <span class="pill p3">要做法</span> 查方法卡/SOP →  <span class="pill p1">要出处</span> 查 34/调研2 →  <span class="pill p4">要灵感</span> 查 39/40/视频库。四条线互不串门。</p>
+  </div>
+
+  <!-- 行动 -->
+  <div class="card">
+    <h2>🚧 还差什么（诚实清单 + 建议动作）</h2>
+    <table>
+      <tr><th>缺口</th><th>影响</th><th>建议动作</th></tr>
+      <tr><td>09/25 源头是二手</td><td>对外讲「专业权威」时只有 34 撑得住</td><td>用 34 的权威源回填 09/25 的每个阶段（标注原厂/标准出处）</td></tr>
+      <tr><td>38 号 FDE 方法论源头是社区书</td><td>与二轮「弃用范冰」的口径冲突</td><td>把 38 的结论逐条对回 Palantir/OpenAI/Anthropic 原文（34 轨 A 已有），换成一手引用</td></tr>
+      <tr><td>10 个地图文档并存</td><td>读者不知道看哪个</td><td>本文档为唯一总入口；在 09/25/34 头部加「← 回总图」链接</td></tr>
+      <tr><td>没有调度规则</td><td>每次靠临场判断</td><td>落 <code>43_Agent调度规则</code> + 装进 skill，让 agent 自动按规则路由</td></tr>
+    </table>
+    <p class="foot">数据来源：Obsidian 方法论库 fresh 扫描（209 md）· 2026-09-10 · 源文件在 <code>成长系统/</code><br>本页是「收口层」——三张图 + 四份方法论 + 素材池的唯一入口</p>
+  </div>
+
+</div>
+<script>
+var ROWS = [
+ {n:"阶段 1",t:"接客户 / 需求澄清",biz:"先杀错误问题：PSF 三关（痛点/经济性/可行性）；把「想上 AI」翻译成具体的人+事",eng:"Discover：需求门 G1（价值假设可证伪 + KPI 可量化 + 客户签字）",src:"OpenAI「solve a specific problem」· MIT 95% 失败率 · TOGAF ADM",gun:"38 SOP-1 · REQ-001 · requirement-clarifier · 39 方法1.6 反AI幻觉清单"},
+ {n:"阶段 2",t:"技术选型 / 方案设计",biz:"定载体与档位：本地/云/混合；按客户成熟度选档（启航包→工作站→近企业）",eng:"Design + Architect：方案门 G2（ADR+C4 图）· 载体门 G3（决策树+合规预审）",src:"三云厂 Well-Architected · TOGAF B/C/D · Gartner 5 级成熟度",gun:"25 阶段2-3 · 23 载体怎么选 · ECO-001 · 决策卡 7 张 · AR-001"},
+ {n:"阶段 3",t:"MVP / 试点",biz:"用周级节奏在客户真环境证明价值（MVD）；不做「概念验证坟墓」",eng:"Data + Eval + Build + Test：数据门 G4（PII 脱敏）· 评测门 G5（≥5 维度+基线）",src:"OpenAI「deliver early value」· PMBOK 评估 · ISO 42001 · 12-Factor",gun:"38 SOP-2 MVD · POC-001 · EVAL-001/004 · 39 方法1.2 驻场轻量交付五步"},
+ {n:"阶段 4",t:"交付部署 / 上线",biz:"企业集成 + 受控试用 → 全面上线；客户团队真的用起来才算完",eng:"Deploy + Accept：发布策略 · 验收门（审计记录）",src:"三云厂发布策略 · ISO 审计 · Anthropic「codify patterns」",gun:"25 阶段8-9 · REL-001 · 38 SOP-5 热修复文化"},
+ {n:"阶段 5",t:"质量保障 / 持续稳定",biz:"持续可见指标 = 续约的筹码（NDR）；出问题按小时计修复",eng:"Operate：运营卓越 · 监控告警 · 门禁复核",src:"Palantir NDR 139% · 三云厂运营卓越 · Gartner AI TRiSM",gun:"25 阶段10 · REL-001 · CRISIS-001 · 34 轨C TRiSM 五支柱"},
+ {n:"阶段 6",t:"运营 / 续约 / 客户成功",biz:"用双段 ROI 证明价值 → 续约 → 横扩 BU/场景（把生意做大）",eng:"Iterate：模型漂移监控 · 再训练 · 持续改进",src:"McKinsey 双段 ROI · ISO Clause 10 持续改进 · ML Lens 漂移监控",gun:"MLOPS-001 · ITER-001 · RESULT-001 · 38 SOP-7 灯塔筛选"},
+ {n:"阶段 7",t:"复盘沉淀 / 规模化",biz:"经验资产化：一个打法服务 N 客户（从 1 到 N 的飞轮）",eng:"Retire（退役合规）+ 现场反馈环反哺平台",src:"Anthropic「team can own」· TOGAF H 变更管理 · ISO 模型退役",gun:"38 SOP-8 · RETIRE-001 · 复盘区 · 41 方法论三件套"}
+];
+var tl = document.getElementById("tl");
+ROWS.forEach(function(r){
+  var d = document.createElement("div");
+  d.className = "tlrow";
+  d.innerHTML =
+   '<div class="tlstage"><div class="n">'+r.n+'</div><div class="t">'+r.t+'</div></div>'+
+   '<div class="tlbody">'+
+     '<div class="tlcell"><div class="lab">业务在干什么（09 · 34轨A）</div><div class="val">'+r.biz+'</div></div>'+
+     '<div class="tlcell"><div class="lab">工程在干什么（25 · 34轨B）</div><div class="val">'+r.eng+'</div></div>'+
+     '<div class="tlcell tlwide"><div class="lab">权威依据（34轨C · 调研2）</div><div class="val">'+r.src+'</div></div>'+
+     '<div class="tlcell tlwide"><div class="lab">库内武器（点开就能用）</div><div class="val">'+r.gun+'</div></div>'+
+   '</div>';
+  tl.appendChild(d);
+});
+</script>
+</body>
+</html>
