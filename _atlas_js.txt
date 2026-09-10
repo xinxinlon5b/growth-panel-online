@@ -1,0 +1,397 @@
+
+var DATA = /*__DATA__*/;
+var COLORS = {root:"#0a84ff",branch:"#0a84ff",stage:"#0a84ff",doc:"#30d158",sop:"#409cff",method:"#8e8e93",
+ gap:"#ff9f0a",fcard:"#40c8e0",dcard:"#bf5af2",pool:"#40c8e0",video:"#40c8e0",cluster:"#40c8e0",
+ rule:"#bf5af2",gate:"#ff9f0a",dom:"#8e8e93",cat39:"#8e8e93",leaf:"#8e8e93",dflt:"#8e8e93"};
+var TYPELABEL = {root:"总入口",branch:"一级板块",stage:"落地阶段",doc:"方法论文档",sop:"SOP 流程",
+ method:"实战方法",gap:"补缺经验",fcard:"方法卡",dcard:"决策卡",pool:"素材池",video:"视频类目",
+ cluster:"方法簇",rule:"调度场景",gate:"质量门禁",dom:"方法卡域",cat39:"方法类目",leaf:"要点"};
+
+/* ---------- 视图状态 ---------- */
+var collapsed = {};          // id -> true 收起
+var sel = null;
+var k = 1, tx = 40, ty = 40;
+var NW = {root:250,branch:250,stage:230,doc:290,sop:250,method:225,gap:245,fcard:230,dcard:230,
+ pool:250,video:215,cluster:215,rule:230,gate:210,dom:190,cat39:220,leaf:250};
+var NH = 30, VGAP = 9;
+
+function isOpen(n){ return !collapsed[n.id]; }
+function visibleKids(n){
+  if(!n.children || !n.children.length) return [];
+  return isOpen(n) ? n.children : [];
+}
+
+/* ---------- 布局: 简洁横向树 ---------- */
+var layoutNodes = [], layoutLinks = [];
+function layout(){
+  layoutNodes = []; layoutLinks = [];
+  var y = 0;
+  function walk(n, depth, parent){
+    var kids = visibleKids(n);
+    var w = NW[n.type] || 230;
+    var node = {n:n, depth:depth, x:depth*300, y:0, w:w, h:NH, parent:parent, kids:kids};
+    if(kids.length){
+      var startY = y;
+      kids.forEach(function(ch){ walk(ch, depth+1, node); });
+      node.y = (startY + y - VGAP) / 2;
+    } else {
+      node.y = y; y += NH + VGAP;
+    }
+    layoutNodes.push(node);
+    if(parent) layoutLinks.push({p:parent, c:node});
+    return node;
+  }
+  y = 0;
+  walk(DATA, 0, null);
+}
+
+/* ---------- 渲染 ---------- */
+var NS = "http://www.w3.org/2000/svg";
+function el(t, a){ var e = document.createElementNS(NS, t); for(var k2 in a) e.setAttribute(k2, a[k2]); return e; }
+function trunc(s, n){ return s.length > n ? s.slice(0, n-1) + "…" : s; }
+
+function render(){
+  layout();
+  var lg = document.getElementById("links"), ng = document.getElementById("nodes");
+  lg.innerHTML = ""; ng.innerHTML = "";
+  // links
+  layoutLinks.forEach(function(l){
+    var x1 = l.p.x + l.p.w, y1 = l.p.y + NH/2, x2 = l.c.x, y2 = l.c.y + NH/2;
+    var mx = (x1 + x2) / 2;
+    var p = el("path", {class:"link", d:"M"+x1+","+y1+" C"+mx+","+y1+" "+mx+","+y2+" "+x2+","+y2});
+    lg.appendChild(p);
+  });
+  // nodes
+  layoutNodes.forEach(function(nd){
+    var n = nd.n;
+    var g = el("g", {class:"node n-" + n.type + (sel && sel.id === n.id ? " sel" : "")});
+    g.setAttribute("transform", "translate(" + nd.x + "," + nd.y + ")");
+    g.appendChild(el("rect", {class:"box", x:0, y:0, width:nd.w, height:NH, rx:11}));
+    g.appendChild(el("rect", {class:"acc", x:3, y:7, width:3, height:NH-14, rx:1.5,
+      fill:(COLORS[n.type] || COLORS.dflt), opacity:.9}));
+    var t = el("text", {class:"lab", x:15, y:19});
+    t.textContent = trunc(n.label, Math.floor((nd.w-30)/6.6));
+    g.appendChild(t);
+    if(n.badge){
+      var b = el("text", {class:"sub", x:15, y:29});
+      b.textContent = n.badge;
+      g.appendChild(b);
+    }
+    if(n.children && n.children.length){
+      var tg = el("g", {class:"tgl"});
+      tg.setAttribute("transform", "translate(" + (nd.w - 15) + ",9)");
+      tg.appendChild(el("rect", {width:12, height:12, rx:3}));
+      var s = el("text", {class:"tsig", x:6, y:10});
+      s.textContent = isOpen(n) ? "–" : "+";
+      tg.appendChild(s);
+      tg.addEventListener("click", function(ev){ ev.stopPropagation(); toggle(n.id); });
+      g.appendChild(tg);
+    }
+    g.addEventListener("click", function(){ pick(n, nd); });
+    ng.appendChild(g);
+  });
+  applyT();
+}
+
+function applyT(){ document.getElementById("world").setAttribute("transform", "translate("+tx+","+ty+") scale("+k+")"); }
+
+function toggle(id){
+  if(collapsed[id]) delete collapsed[id]; else collapsed[id] = true;
+  render(); if(sel) drawSide(sel);
+}
+
+/* ---------- 交互: 缩放/平移 (鼠标 + 触摸) ---------- */
+var cv = document.getElementById("canvas");
+function zoomAt(mx, my, f){
+  var nk = Math.max(0.12, Math.min(3.2, k * f));
+  tx = mx - (mx - tx) * (nk / k); ty = my - (my - ty) * (nk / k); k = nk; applyT();
+}
+cv.addEventListener("wheel", function(e){
+  e.preventDefault();
+  var r = cv.getBoundingClientRect();
+  zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.12 : 1/1.12);
+}, {passive:false});
+/* 鼠标拖拽 */
+var dragging = false, sx = 0, sy = 0, stx = 0, sty = 0;
+cv.addEventListener("mousedown", function(e){
+  if(e.target.closest(".node")) return;
+  dragging = true; sx = e.clientX; sy = e.clientY; stx = tx; sty = ty; cv.classList.add("drag");
+});
+window.addEventListener("mousemove", function(e){
+  if(!dragging) return;
+  tx = stx + (e.clientX - sx); ty = sty + (e.clientY - sy); applyT();
+});
+window.addEventListener("mouseup", function(){ dragging = false; cv.classList.remove("drag"); });
+/* 触摸: 单指平移 + 双指捏合缩放(手机/平板) */
+var touching = false, pinchD = 0, pinchK = 1;
+function tdist(t){ return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+cv.addEventListener("touchstart", function(e){
+  if(e.target.closest(".node")) return;
+  if(e.touches.length === 1){
+    touching = true; pinchD = 0;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; stx = tx; sty = ty;
+  } else if(e.touches.length === 2){
+    touching = true; pinchD = tdist(e.touches); pinchK = k;
+    sx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    sy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    stx = tx; sty = ty;
+  }
+}, {passive:true});
+cv.addEventListener("touchmove", function(e){
+  if(!touching) return;
+  e.preventDefault();
+  var r = cv.getBoundingClientRect();
+  if(e.touches.length === 1 && pinchD === 0){
+    tx = stx + (e.touches[0].clientX - sx); ty = sty + (e.touches[0].clientY - sy); applyT();
+  } else if(e.touches.length === 2 && pinchD > 0){
+    var d = tdist(e.touches);
+    var cx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left;
+    var cy = (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top;
+    var nk = Math.max(0.12, Math.min(3.2, pinchK * (d / pinchD)));
+    var pk = k; k = nk;
+    tx = cx - (cx - tx) * (nk / pk); ty = cy - (cy - ty) * (nk / pk); applyT();
+  }
+}, {passive:false});
+cv.addEventListener("touchend", function(e){
+  if(e.touches.length === 0){ touching = false; pinchD = 0; }
+  else if(e.touches.length === 1){
+    pinchD = 0;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; stx = tx; sty = ty;
+  }
+}, {passive:true});
+function zoom(f){ var r = cv.getBoundingClientRect(); zoomAt(r.width/2, r.height/2, f); }
+document.getElementById("bIn").onclick = function(){ zoom(1.25); };
+document.getElementById("bOut").onclick = function(){ zoom(0.8); };
+/* 取景: 把一组节点框进视野 */
+function contentBox(nodes){
+  if(!nodes.length) return null;
+  return {
+    x0: Math.min.apply(null, nodes.map(function(a){ return a.x; })),
+    x1: Math.max.apply(null, nodes.map(function(a){ return a.x + a.w; })),
+    y0: Math.min.apply(null, nodes.map(function(a){ return a.y; })),
+    y1: Math.max.apply(null, nodes.map(function(a){ return a.y + NH; })),
+    w: 0, h: 0
+  };
+}
+function frameBox(b, maxK, minK){
+  if(!b) return;
+  b.w = b.x1 - b.x0; b.h = b.y1 - b.y0;
+  var r = cv.getBoundingClientRect();
+  var pad = (r.width < 900 ? 24 : 70);
+  k = Math.max(minK, Math.min(maxK, Math.min((r.width - pad*2)/(b.w+1), (r.height - pad*2)/(b.h+1))));
+  tx = pad + (r.width - pad*2 - b.w*k)/2 - b.x0*k;
+  ty = pad + (r.height - pad*2 - b.h*k)/2 - b.y0*k;
+  applyT();
+}
+function fit(){ frameBox(contentBox(layoutNodes), 1.15, 0.22); }
+document.getElementById("bFit").onclick = fit;
+function setAll(v){
+  collapsed = {};
+  if(v){ (function w(n){ (n.children||[]).forEach(function(c){ collapsed[c.id] = true; if(c.children && c.children.length) w(c); }); })(DATA); }
+  render(); if(sel) drawSide(sel);
+}
+document.getElementById("bExpand").onclick = function(){ setAll(false); fit(); };
+document.getElementById("bCollapse").onclick = function(){ setAll(true); fit(); };
+
+/* ---------- 侧栏 ---------- */
+function closeSide(){
+  document.getElementById("side").classList.remove("on");
+  document.getElementById("sideMask").classList.remove("on");
+}
+function drawSide(n){
+  sel = n;
+  document.getElementById("side").classList.add("on");
+  if(window.innerWidth <= 900) document.getElementById("sideMask").classList.add("on");
+  document.getElementById("sBadge").textContent = TYPELABEL[n.type] || n.type;
+  document.getElementById("sTitle").textContent = n.label;
+  document.getElementById("sDesc").innerHTML = n.desc ? "<p>" + n.desc.replace(/·/g, " · ") + "</p>" : "";
+  document.getElementById("sFile").textContent = n.file ? ("出处：" + n.file) : "";
+  var acts = document.getElementById("sActs");
+  acts.innerHTML = "";
+  if(n.file){
+    var b = document.createElement("div"); b.className = "act"; b.textContent = "📖 打开原文";
+    b.onclick = function(){ openDoc(n.file, n.anchor, n.label); };
+    acts.appendChild(b);
+  }
+  var kidsEl = document.getElementById("sKids");
+  kidsEl.innerHTML = "";
+  if(n.children && n.children.length){
+    kidsEl.innerHTML = '<div class="t">子节点（'+n.children.length+'）· 点开跳到该节点</div>';
+    n.children.forEach(function(c){
+      var ch = document.createElement("span"); ch.className = "chip"; ch.textContent = trunc(c.label, 26);
+      ch.onclick = function(){ pick(c, null); };
+      kidsEl.appendChild(ch);
+    });
+  }
+  render();
+}
+function pick(n, nd){
+  // 点节点 = 选中 + 自动展开下一层（脑图钻取手感）
+  if(n.children && n.children.length && collapsed[n.id]) delete collapsed[n.id];
+  drawSide(n);
+  // 放大到「以该节点为根的可读视图」——钻取时永远看得清
+  fitToSub(n, nd);
+}
+function fitToSub(n, nd){
+  var ids = {}; (function w(x){ ids[x.id] = true; visibleKids(x).forEach(w); })(n);
+  var sub = layoutNodes.filter(function(a){ return ids[a.n.id]; });
+  frameBox(contentBox(sub), 1.25, 0.34);
+}
+/* ---------- 原文 modal (极简 markdown 渲染) ---------- */
+function md2html(md){
+  var L = md.split("\n"), out = [], i = 0, inCode = false, codeBuf = [];
+  function inline(s){
+    s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    s = s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+    s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+    return s;
+  }
+  while(i < L.length){
+    var ln = L[i];
+    if(ln.trim().startsWith("```")){
+      if(!inCode){ inCode = true; codeBuf = []; }
+      else { inCode = false; out.push("<pre>" + codeBuf.join("\n") + "</pre>"); }
+      i++; continue;
+    }
+    if(inCode){ codeBuf.push(ln.replace(/&/g,"&amp;").replace(/</g,"&lt;")); i++; continue; }
+    if(/^\s*\|.*\|\s*$/.test(ln) && i+1 < L.length && /^\s*\|[\s:-]+\|\s*$/.test(L[i+1])){
+      var rows = [];
+      while(i < L.length && /^\s*\|.*\|\s*$/.test(L[i])){
+        var cells = L[i].trim().replace(/^\||\|$/g, "").split("|");
+        if(!/^[\s:-]+$/.test(cells[0] || "")) rows.push(cells);
+        i++;
+      }
+      var h = "<table><tr>" + rows[0].map(function(c){ return "<th>" + inline(c.trim()) + "</th>"; }).join("") + "</tr>";
+      for(var r = 1; r < rows.length; r++) h += "<tr>" + rows[r].map(function(c){ return "<td>" + inline(c.trim()) + "</td>"; }).join("") + "</tr>";
+      out.push(h + "</table>"); continue;
+    }
+    var m;
+    if((m = ln.match(/^(#{1,6})\s+(.*)$/))){ out.push("<h" + m[1].length + ">" + inline(m[2]) + "</h" + m[1].length + ">"); i++; continue; }
+    if(/^\s*(---|\*\*\*)\s*$/.test(ln)){ out.push("<hr>"); i++; continue; }
+    if(/^\s*>\s?/.test(ln)){ out.push("<blockquote>" + inline(ln.replace(/^\s*>\s?/, "")) + "</blockquote>"); i++; continue; }
+    if(/^\s*[-*]\s+/.test(ln)){
+      var li = [];
+      while(i < L.length && /^\s*[-*]\s+/.test(L[i])){ li.push("<li>" + inline(L[i].replace(/^\s*[-*]\s+/, "")) + "</li>"); i++; }
+      out.push("<ul>" + li.join("") + "</ul>"); continue;
+    }
+    if(/^\s*\d+\.\s+/.test(ln)){
+      var lo = [];
+      while(i < L.length && /^\s*\d+\.\s+/.test(L[i])){ lo.push("<li>" + inline(L[i].replace(/^\s*\d+\.\s+/, "")) + "</li>"); i++; }
+      out.push("<ol>" + lo.join("") + "</ol>"); continue;
+    }
+    if(ln.trim() === ""){ i++; continue; }
+    out.push("<p>" + inline(ln) + "</p>"); i++;
+  }
+  return out.join("\n");
+}
+function openDoc(file, anchor, title){
+  document.getElementById("mtitle").textContent = title || file;
+  document.getElementById("modal").classList.add("on");
+  if(!modalOn){
+    modalOn = true;
+    try { history.pushState({__doc:1}, ""); } catch(e){}
+  }
+  var bd = document.getElementById("mbd");
+  bd.innerHTML = "<p style='color:#98a1b0'>加载中… " + file + "</p>";
+  fetch("obs/" + file.split("/").map(encodeURIComponent).join("/")).then(function(r){
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.text();
+  }).then(function(t){
+    // 去 frontmatter
+    t = t.replace(/^---[\s\S]*?\n---\n/, "");
+    bd.innerHTML = md2html(t);
+    if(anchor){
+      var hits = bd.querySelectorAll("h1,h2,h3,h4");
+      for(var q = 0; q < hits.length; q++){
+        if(hits[q].textContent.indexOf(anchor) >= 0 || anchor.indexOf(hits[q].textContent.trim()) >= 0){
+          hits[q].scrollIntoView({block:"start"}); hits[q].style.color = "#f5b544"; break;
+        }
+      }
+    }
+    bd.scrollTop = bd.scrollTop;
+  }).catch(function(e){
+    bd.innerHTML = "<p style='color:#ff6b6b'>原文加载失败：" + e.message + "</p><p style='color:#98a1b0'>文件：" + file + "</p>";
+  });
+}
+/* 弹层开关 = 接浏览器返回键(手机上按返回=关弹层, 不是退出页面) */
+var modalOn = false;
+function hideDoc(){
+  document.getElementById("modal").classList.remove("on");
+  modalOn = false;
+}
+function closeDoc(){
+  hideDoc();                                        // 立即关闭(不等异步 popstate)
+  if(history.state && history.state.__doc){         // 再清掉这次 push 的历史, 免得返回键要按两次
+    try { history.back(); } catch(e){}
+  }
+}
+document.getElementById("mback").onclick = closeDoc;
+document.getElementById("modal").onclick = function(e){ if(e.target.id === "modal") closeDoc(); };
+document.getElementById("sideMask").onclick = closeSide;
+window.addEventListener("popstate", function(){
+  if(modalOn){ hideDoc(); return; }
+  if(document.getElementById("side").classList.contains("on")) closeSide();
+});
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape" && modalOn) closeDoc();
+});
+
+/* ---------- 三层视角 ---------- */
+document.getElementById("bD3").onclick = function(){
+  var ids = ["A","B","C","D","E","F","G"];
+  collapsed = {};
+  (function w(n){
+    (n.children||[]).forEach(function(c){
+      if(ids.indexOf(c.id) >= 0) delete collapsed[c.id];
+      else if(c.children && c.children.length) collapsed[c.id] = true;
+      w(c);
+    });
+  })(DATA);
+  delete collapsed["A"]; delete collapsed["B"]; delete collapsed["C"];
+  render(); fit();
+};
+
+/* ---------- 搜索 ---------- */
+var q = document.getElementById("q");
+q.addEventListener("input", function(){
+  var v = q.value.trim().toLowerCase();
+  var nodes = document.querySelectorAll(".node");
+  if(!v){ nodes.forEach(function(e){ e.classList.remove("dim","hit"); }); return; }
+  // 命中自动展开祖先
+  var hitIds = {};
+  (function w(n, chain){
+    (n.children||[]).forEach(function(c){
+      var c2 = chain.concat([c]);
+      if((c.label + " " + (c.desc||"") + " " + (c.badge||"")).toLowerCase().indexOf(v) >= 0){
+        c2.forEach(function(a){ delete collapsed[a.id]; });
+        hitIds[c.id] = true;
+      }
+      w(c, c2);
+    });
+  })(DATA, []);
+  render();
+  var idx = {}; layoutNodes.forEach(function(nd, i){ idx[nd.n.id] = i; });
+  var all = document.querySelectorAll(".node");
+  all.forEach(function(e, i){ e.classList.remove("dim","hit"); });
+  layoutNodes.forEach(function(nd, i){
+    var e = all[i]; if(!e) return;
+    if(hitIds[nd.n.id]) e.classList.add("hit"); else e.classList.add("dim");
+  });
+});
+
+/* ---------- 图例 ---------- */
+document.getElementById("leg").innerHTML =
+ '<div style="margin-bottom:6px"><b>图例</b></div>' +
+ [['branch','板块'],['stage','阶段'],['doc','方法论'],['sop','SOP'],['method','方法'],['gap','补缺'],['fcard','方法卡'],['dcard','决策卡'],['rule','调度'],['pool','素材']]
+ .map(function(x){ return '<div><i style="background:' + (COLORS[x[0]]||"#8e8e93") + '"></i>' + x[1] + '</div>'; }).join("");
+
+/* ---------- 启动 ---------- */
+// 默认: 只展开「总根 + 一级板块」，其余收起(保证一屏能看清)；点节点逐层钻取
+(function initCollapse(){
+  collapsed = {};
+  (DATA.children || []).forEach(function(b){
+    if(b.children && b.children.length) collapsed[b.id] = true;
+  });
+})();
+render(); fit();
