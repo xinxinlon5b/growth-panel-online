@@ -376,6 +376,31 @@ mark.kterm:focus-visible{outline:2px solid var(--green);outline-offset:1px}
 </div></div>
 
 <script>
+/* 静态拦截器: 在线版(无后端)时 /api/* 读快照, 写操作给降级提示 */
+(function(){
+  try{
+    if(window.__STATIC__) return;
+    window.__STATIC__ = true;
+    var SNAP = {};
+    function snapLoad(){ try{ SNAP = JSON.parse(localStorage.getItem("grow_static_api") || "{}"); }catch(e){ SNAP = {}; } }
+    function snapSave(){ try{ localStorage.setItem("grow_static_api", JSON.stringify(SNAP)); }catch(e){} }
+    snapLoad();
+    var REAL = {"/api/status":"static_api_status.json","/api/projects":"static_api_projects.json","/api/audit_reports":"static_api_audit_reports.json"};
+    var origFetch = window.fetch;
+    window.fetch = function(url, opts){
+      var u = String(url);
+      if(u.indexOf("/api/") === 0){
+        if(REAL[u] && !(opts && opts.method && opts.method !== "GET")){
+          return origFetch(REAL[u]).then(function(r){ return r.json().then(function(j){ return {ok:true, json:function(){ return Promise.resolve(j); }, text:function(){ return Promise.resolve(JSON.stringify(j)); }}; }); });
+        }
+        return Promise.resolve({ok:false, json:function(){ return Promise.resolve({ok:false, error:"在线演示模式不支持写操作，请回本地 8895"}); }, text:function(){ return Promise.resolve("{}"); }});
+      }
+      return origFetch.apply(this, arguments);
+    };
+  }catch(e){}
+})();
+</script>
+<script>
 /* ================= 数据（与 v1.0 一致）================= */
 var DIRS = [
   {id:"f",name:"框架做对",desc:"企业AI落地需要哪些框架/方法/功能点，每个都有「是什么 / 什么时候需要 / 怎么做 / 不该怎么做」，从第一版就把架构做对。",ico:"框"},
@@ -496,13 +521,13 @@ var CARDS = [
 {st:"c1",t:"Sentinel ★23.1k（流控防护）",when:"要 QPS 限流/熔断/热点参数防护时",what:"阿里云原生微服务高可用流控防护：流量控制、熔断降级、系统自适应保护、热点参数限流。",how:["QPS 限流+冷启动","热点参数限流","熔断降级规则化"],bad:["只限流不熔断","规则写死","无降级逻辑"],links:[{n:"alibaba/Sentinel",d:"阿里流控防护",u:"https://github.com/alibaba/Sentinel"}]},
 {st:"c1",t:"Vault（密钥管理标准）",when:"密钥/Token/DB 凭据需要集中安全托管时",what:"HashiCorp Vault：集中密钥管理，动态凭据、加密存储、访问审计、定期轮换。",how:["集中存储+加密+审计","动态 DB 凭据 TTL 分钟级","轮换与吊销自动化"],bad:["密钥写代码里","所有服务共用超级密钥","无审计"],links:[{n:"hashicorp/vault",d:"密钥管理行业标准",u:"https://github.com/hashicorp/vault"}]},
 /* 决策卡 */
-{st:"c2",t:"决策卡 ALT-001 · 中俄跨境电商获客",when:"接中俄跨境物流获客客户时",what:"阿尔泰国际物流获客系统决策卡：6 平台获客架构、AI 评分、画像、话术触达、每日报告。",how:["平台矩阵：VK/WA/TG/IG/TikTok/速卖通","线索采集→AI评分→画像→触达→跟进闭环","运营看板 8898 聚合指标"],bad:["个人号批量私信陌生用户（封号红线）","用 newsfeed 数据做 AI 评分（合规红线）","无触达闸门直接发"],links:[{n:"决策卡文件",d:"Obsidian cards/ALT-001",u:"/obs/cards/ALT-001-中俄跨境电商获客.md"}]},
-{st:"c2",t:"决策卡 NIF-001 · 本地化 AI 商品图工作室",when:"客户要做 AI 商品图/换背景/多角度时",what:"NIFTY STUDIO·纳福：本地 AI 商品图工作室方案（Flask+rembg+LibTV），品牌命名纳福=来财。",how:["本地 Flask 工作室（8901）","Seedream 5.0 Pro 出图","积分账本+并发队列"],bad:["豆包桌面端不可靠","无快照回滚","客户机没有自己的账号"],links:[{n:"决策卡文件",d:"Obsidian cards/NIF-001",u:"/obs/cards/NIF-001-本地化AI商品图工作室.md"}]},
-{st:"c2",t:"决策卡 AR-003 · 顾问式 AI 架构",when:"客户需求模糊、要架构建议时",what:"顾问式 AI 架构决策卡：以业务价值为锚，先访谈再架构，输出可执行方案+报价。",how:["先业务访谈（小白卡片）","架构分层+成本模型","方案+报价一起交付"],bad:["上来就写代码","只给架构不给报价","术语堆砌"],links:[{n:"决策卡文件",d:"Obsidian cards/AR-003",u:"/obs/cards/AR-003-顾问式AI架构决策.md"}]},
-{st:"c2",t:"决策卡 ENTERPRISE-001 · 近企业档",when:"客户预算 ¥3-6 万、要企业级交付时",what:"企业级交付档位：两阶段安装器+43 项验收+文档+运维+安全红线。",how:["两阶段安装器","43 项验收清单","交付+运维+安全红线"],bad:["按旧式 ¥2-8k 交付","无验收标准","无安全红线"],links:[{n:"决策卡文件",d:"Obsidian cards/ENTERPRISE-001",u:"/obs/cards/ENTERPRISE-001-近企业档决策卡.md"}]},
-{st:"c2",t:"决策卡 RESULT-001 · 按结果付费",when:"客户想按效果付费、降低决策门槛时",what:"按结果付费档位：降低客户门槛，按落地效果分阶段收费。",how:["分阶段按成果收费","结果可量化","风险共担"],bad:["结果不可量化还按结果收费","一次性收完不管","承诺无法兑现"],links:[{n:"决策卡文件",d:"Obsidian cards/RESULT-001",u:"/obs/cards/RESULT-001-按结果付费决策卡.md"}]},
-{st:"c2",t:"决策卡 MIGRATE-001 · Coze 迁移本地化",when:"客户从 Coze/低代码平台要迁到本地时",what:"Coze 迁移本地化决策卡：把云端流程搬到本地自托管，数据自主可控。",how:["云端流程盘点","本地等价实现","数据迁移+验证"],bad:["直接放弃云端资产","迁移不验证","本地能力缩水"],links:[{n:"决策卡文件",d:"Obsidian cards/MIGRATE-001",u:"/obs/cards/MIGRATE-001-Coze迁移本地化决策卡.md"}]},
-{st:"c2",t:"决策卡 STARTER-001 · 启航包档",when:"客户预算 2k-8k、要快速起步时",what:"启航包档位：装 agent + 给 skills 的轻量交付，快速见效。",how:["装 agent + skills","开箱即用","快速交付"],bad:["无运维承诺","无验收","无安全红线"],links:[{n:"决策卡文件",d:"Obsidian cards/STARTER-001",u:"/obs/cards/STARTER-001-启航包档决策卡.md"}]},
+{st:"c2",t:"决策卡 ALT-001 · 中俄跨境电商获客",when:"接中俄跨境物流获客客户时",what:"阿尔泰国际物流获客系统决策卡：6 平台获客架构、AI 评分、画像、话术触达、每日报告。",how:["平台矩阵：VK/WA/TG/IG/TikTok/速卖通","线索采集→AI评分→画像→触达→跟进闭环","运营看板 8898 聚合指标"],bad:["个人号批量私信陌生用户（封号红线）","用 newsfeed 数据做 AI 评分（合规红线）","无触达闸门直接发"],links:[{n:"决策卡文件",d:"Obsidian cards/ALT-001",u:"obs/cards/ALT-001-中俄跨境电商获客.md"}]},
+{st:"c2",t:"决策卡 NIF-001 · 本地化 AI 商品图工作室",when:"客户要做 AI 商品图/换背景/多角度时",what:"NIFTY STUDIO·纳福：本地 AI 商品图工作室方案（Flask+rembg+LibTV），品牌命名纳福=来财。",how:["本地 Flask 工作室（8901）","Seedream 5.0 Pro 出图","积分账本+并发队列"],bad:["豆包桌面端不可靠","无快照回滚","客户机没有自己的账号"],links:[{n:"决策卡文件",d:"Obsidian cards/NIF-001",u:"obs/cards/NIF-001-本地化AI商品图工作室.md"}]},
+{st:"c2",t:"决策卡 AR-003 · 顾问式 AI 架构",when:"客户需求模糊、要架构建议时",what:"顾问式 AI 架构决策卡：以业务价值为锚，先访谈再架构，输出可执行方案+报价。",how:["先业务访谈（小白卡片）","架构分层+成本模型","方案+报价一起交付"],bad:["上来就写代码","只给架构不给报价","术语堆砌"],links:[{n:"决策卡文件",d:"Obsidian cards/AR-003",u:"obs/cards/AR-003-顾问式AI架构决策.md"}]},
+{st:"c2",t:"决策卡 ENTERPRISE-001 · 近企业档",when:"客户预算 ¥3-6 万、要企业级交付时",what:"企业级交付档位：两阶段安装器+43 项验收+文档+运维+安全红线。",how:["两阶段安装器","43 项验收清单","交付+运维+安全红线"],bad:["按旧式 ¥2-8k 交付","无验收标准","无安全红线"],links:[{n:"决策卡文件",d:"Obsidian cards/ENTERPRISE-001",u:"obs/cards/ENTERPRISE-001-近企业档决策卡.md"}]},
+{st:"c2",t:"决策卡 RESULT-001 · 按结果付费",when:"客户想按效果付费、降低决策门槛时",what:"按结果付费档位：降低客户门槛，按落地效果分阶段收费。",how:["分阶段按成果收费","结果可量化","风险共担"],bad:["结果不可量化还按结果收费","一次性收完不管","承诺无法兑现"],links:[{n:"决策卡文件",d:"Obsidian cards/RESULT-001",u:"obs/cards/RESULT-001-按结果付费决策卡.md"}]},
+{st:"c2",t:"决策卡 MIGRATE-001 · Coze 迁移本地化",when:"客户从 Coze/低代码平台要迁到本地时",what:"Coze 迁移本地化决策卡：把云端流程搬到本地自托管，数据自主可控。",how:["云端流程盘点","本地等价实现","数据迁移+验证"],bad:["直接放弃云端资产","迁移不验证","本地能力缩水"],links:[{n:"决策卡文件",d:"Obsidian cards/MIGRATE-001",u:"obs/cards/MIGRATE-001-Coze迁移本地化决策卡.md"}]},
+{st:"c2",t:"决策卡 STARTER-001 · 启航包档",when:"客户预算 2k-8k、要快速起步时",what:"启航包档位：装 agent + 给 skills 的轻量交付，快速见效。",how:["装 agent + skills","开箱即用","快速交付"],bad:["无运维承诺","无验收","无安全红线"],links:[{n:"决策卡文件",d:"Obsidian cards/STARTER-001",u:"obs/cards/STARTER-001-启航包档决策卡.md"}]},
 /* 抖音/博主案例 */
 {st:"c3",t:"Awesome-FDE-Roadmap ★976 · FDE成长路线图",when:"想知道「企业AI落地的工程师」要学什么、怎么成长时",what:"Forward Deployment Engineer（前向部署工程师）——把 AI 系统真正交付进客户环境的工程师。它是软件工程师+AI/数据架构师+咨询顾问的混合体，核心是弥合「总部完美代码」与「客户混乱现实」之间的差距（The Delta）。",how:["按 3 阶段学：①Data Engineering（地基）→ ②Cloud Architecture（载体）→ ③Consulting Mindset（'前向'的灵魂）","学完每阶段对照自己：已做过哪些项目覆盖了它","真本事 = 把模板变成你自己的交付物"],bad:["收藏=学会（不看等于零）","只学技术不学客户沟通（FDE 一半是咨询）","只刷视频不写代码不交付"],links:[{n:"GitHub 项目 ★976",d:"FDE 完整路线图",u:"https://github.com/pierpaolo28/Awesome-FDE-Roadmap"}],tool:"roadmap",roadmap:{title:"FDE 成长路线（3 阶段 12 项）",target:"我现在的 FDE 能力",phases:[
 {name:"① Data Engineering 地基（数据是客户现实的第一关）",items:[
@@ -527,7 +552,7 @@ var CARDS = [
 {st:"c3",t:"langgenius/dify · LLM应用开发平台",when:"要给客户快速搭 LLM 应用/Agent 工作流时",what:"开源 LLM 应用开发平台：可视化编排 Agent 工作流、RAG 管道、模型接入、可观测，企业落地常用底座。",how:["对照 dify 的编排思路设计我们的 Agent 流程","看它怎么处理 RAG 管道/工具调用（可抄架构）","需要快速交付时考虑 dify 自托管做底座"],bad:["只会拖拽不会理解底层","把 dify 当黑盒不设计自己的数据流"],links:[{n:"GitHub 项目",d:"LLM 应用平台",u:"https://github.com/langgenius/dify"}],tool:"usecase",use:{pros:["可视化编排，不写代码也能出 Agent/工作流","自带 RAG 管道、知识库、模型接入，开箱即用","自托管社区版免费，数据在自己手里","适合给客户快速做演示/PoC，1 周能出东西"],cons:["重度场景（复杂编排/特殊数据流）会被平台限制","自托管要维护一套服务，版本升级有成本","深度定制不如直接写代码灵活"],when_use:"客户要「快速看到 AI 效果」、需求是标准问答/客服/知识库、交付周期紧（几周）",when_not:"需要深度定制数据流/复杂 Agent 协作、客户要求完全本地无 Docker、性能要求极高",first_step:"1) 下载社区版 docker compose 起一个实例 2) 用内置模板建一个「知识库问答」应用 3) 传一份真实客户文档测效果 4) 给客户演示前把答案质量调到 80 分以上"}},
 {st:"c3",t:"mlflow/mlflow · ML生命周期管理",when:"要给客户的 AI 项目加实验追踪/模型管理时",what:"ML/LLM 生命周期管理平台：实验追踪、模型注册、部署管理、评测——模型版本与回滚的基础设施。",how:["用 mlflow 管理模型版本（对应 K模型版本与回滚）","记录每次实验的参数/指标可对比","交付时给客户展示模型演进留痕"],bad:["模型改了就覆盖没留版本","评测结果不记录无法对比"],links:[{n:"GitHub 项目",d:"ML 生命周期管理",u:"https://github.com/mlflow/mlflow"}]},
 {st:"c3",t:"zoharbabin/enterprise-ai-agents-spec ★52 · 企业Agent落地蓝图",when:"要给企业客户规划多 Agent 系统架构时",what:"企业级可扩展 Agent 系统蓝图：多 Agent 编排、权限、可观测、治理的完整规格，直接对标企业交付。",how:["读规格了解企业级要求","对照我们的项目：多 Agent 编排/权限怎么做","提炼成给客户的架构方案"],bad:["读了个开头就放弃","没有对照自己项目"],links:[{n:"GitHub 项目 ★52",d:"企业 Agent 系统规格",u:"https://github.com/zoharbabin/enterprise-ai-agents-spec"}]},
-{st:"c3",t:"抖音双通道采集方案（已拍板）",when:"决定抖音内容怎么进库时",what:"2026-09-03 用户拍板：通道A 账号订阅定时扫（后台无感，只写候选池）+ 通道B 手动丢链接（即时提炼）。",how:["通道A：订阅清单+增量检测，每日/隔日1次","通道B：丢链接→提取→结构化→候选池","出口：候选池→三审→正式入库"],bad:["自动入库不给人看","拉浏览器前台打扰","定时任务不经确认"],links:[{n:"采集流程文档",d:"抖音双通道方案详细",u:"/obs/成长系统/02_采集与提炼流程.md"}]},
+{st:"c3",t:"抖音双通道采集方案（已拍板）",when:"决定抖音内容怎么进库时",what:"2026-09-03 用户拍板：通道A 账号订阅定时扫（后台无感，只写候选池）+ 通道B 手动丢链接（即时提炼）。",how:["通道A：订阅清单+增量检测，每日/隔日1次","通道B：丢链接→提取→结构化→候选池","出口：候选池→三审→正式入库"],bad:["自动入库不给人看","拉浏览器前台打扰","定时任务不经确认"],links:[{n:"采集流程文档",d:"抖音双通道方案详细",u:"obs/成长系统/02_采集与提炼流程.md"}]},
 /* 权威方法论拆解 */
 {st:"c4",t:"拆解：llm-wiki-agent（3.5k★）raw→wiki→graph",when:"要设计知识库/学习系统的存储结构时",what:"第二大脑最小循环：raw/（丢材料）→ agent 读/提取/结构化 → wiki/（结构化页）→ graph/（可视化）。",how:["raw/ 只放原始材料","agent 提炼成结构化 wiki 页","graph 单页可视化关联"],bad:["材料直接进正式库","三套网页","飞轮空转不真跑"],links:[{n:"llm-wiki-agent",d:"GitHub 参考实现",u:"https://github.com/domoszlai/llm-wiki-agent"}]},
 {st:"c4",t:"拆解：AWS WA → 我们的结构对照",when:"要校验我们的架构是否对齐行业标准时",what:"AWS Well-Architected 六大支柱如何映射到我们项目：安全→密钥/审计；可靠→幂等/重试/熔断；性能→缓存/索引。",how:["六大支柱逐项对照我们项目","安全/可靠先补硬伤","每季度重审一次"],bad:["只背书不落地","评审完无行动项"],links:[{n:"AWS WA 框架",d:"官方框架文档",u:"https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html"}]},
@@ -553,7 +578,7 @@ var CARDS = [
 {st:"r1",t:"复盘：中俄轻舟（Ozon 卖家侧）",when:"做跨境电商卖家侧/选品/Listing 时",what:"中俄轻舟：Ozon 卖家后台+Seller API 打通、12 Listing+10 SKU 导入、俄语 Listing DeepSeek 优化、总看板 8898。",how:["Ozon Seller API（v3 导入接口）","店铺 panada&bear 激活","夜间心跳 cron 保活"],bad:["导入 API v1/v2 返回 404（必须 v3）","品牌字段要用「Нет бренда」","图片传 1688 CDN URL"],links:[{n:"Ozon API 参考",d:"ozon-product-import-api.md",u:"https://docs.ozon.ru/api/seller/"}]},
 {st:"r1",t:"复盘：NIFTY STUDIO（本地 AI 商品图）",when:"做本地 AI 出图/商品图工具时",what:"NIFTY STUDIO·纳福：Flask 本地工作室（8901）+ Seedream 5.0 Pro + LibTV CLI 出图 + 积分账本。",how:["launchd 原生服务（非容器）","LibTV 国内直连免魔法","积分账本+并发队列"],bad:["LibTV CLI 登录态会过期（401）需重登","launchd 服务无 GUI 权限 open 静默失败","重启必须走 safe_restart.sh"],links:[{n:"LibTV 积分参考",d:"1积分≈¥0.0444 权威=usablePower",u:"https://www.liblib.art/"}]},
 {st:"r1",t:"复盘：EAC 企业 AI 落地伙伴（8765）",when:"做企业 AI 落地陪伴/学习引擎时",what:"EAC：证据问答+受控学习+项目工厂+需求验真，166 测试全过，124/124 黄金集评测。",how:["证据检索+带引用回答","受控学习 8 步闭环","项目工厂拆需求/架构/任务"],bad:["正式完成度仅 30%（缺范围确认书）","P7 新用户 UAT 未做","云部署决策 30% 未定"],links:[{n:"EAC 服务",d:"本地运行中",u:"http://127.0.0.1:8765/"}]},
-{st:"r1",t:"复盘：成长系统本身（本系统）",when:"任何知识库/学习系统设计时",what:"本成长系统：1 agent+1 网页镜子、4 大主目录、三审流水线、采集双通道（抖音定时扫+手动丢）。",how:["结构先对（4 目录→子目录→功能点）","沉淀过三审","每次决策前读 00 目标文档"],bad:["多网页泛滥（M3 时代教训）","飞轮空转（raw/ 空）","网页乱码不修"],links:[{n:"目标文档",d:"00_目标与决策准则",u:"/obs/成长系统/00_目标与决策准则.md"}]},
+{st:"r1",t:"复盘：成长系统本身（本系统）",when:"任何知识库/学习系统设计时",what:"本成长系统：1 agent+1 网页镜子、4 大主目录、三审流水线、采集双通道（抖音定时扫+手动丢）。",how:["结构先对（4 目录→子目录→功能点）","沉淀过三审","每次决策前读 00 目标文档"],bad:["多网页泛滥（M3 时代教训）","飞轮空转（raw/ 空）","网页乱码不修"],links:[{n:"目标文档",d:"00_目标与决策准则",u:"obs/成长系统/00_目标与决策准则.md"}]},
 /* 踩坑记录 */
 {st:"r2",t:"坑：macOS Python 3.9 语法兼容",when:"交付脚本要跑在客户旧 Mac 上时",what:"客户机系统 Python 3.9.6：PEP604 注解（dict|None）运行时报错；中文源码必须带 coding 声明。",how:["源码加 # -*- coding: utf-8 -*-","避免 PEP604 注解或加 __future__","交付前在 3.9 机器实测"],bad:["本机 3.11 不炸就不管","客户机 3.9 必炸"],links:[{n:"PEP 604",d:"联合类型注解",u:"https://peps.python.org/pep-0604/"}]},
 {st:"r2",t:"坑：terminal lifecycle guard（embedded null byte）",when:"绝对 venv 路径当命令头/脚本内嵌引号时",what:"terminal 工具对绝对 venv 路径作命令头会报 embedded null byte；PYTHONPATH=src 配 env -u 自相矛盾。",how:["用 env -u PYTHONPATH venvpython 脚本.py","或用 python3 /tmp/launcher.py 绕","服务启动后用 ps 验证 PID"],bad:["旧进程占端口=假成功","env -u PYTHONPATH 与 PYTHONPATH=src 同时用"],links:[{n:"venv 文档",d:"Python 虚拟环境",u:"https://docs.python.org/3/library/venv.html"}]},
@@ -570,12 +595,12 @@ var CARDS = [
 /* 四关清单 */
 {st:"a1",t:"关1 · 结构关（dsh 主审）",when:"任何沉淀进库/系统改动时",what:"架构分层清晰？职责清楚？边界无漏洞？不重复造轮子？可扩展？",how:["架构分层+职责检查（单文件 3000+ 行减分）","接口/边界+输入输出校验","已有资产复用检查","可扩展性：换场景还能用"],bad:["结构错了在歪骨架上打补丁","重复造轮子","单文件巨无霸"],links:[{n:"dsh 审计 skills",d:"awesome-architecture-audit 等",u:"https://github.com/veb"}]},
 {st:"a1",t:"关2 · 安全关（OpenClaw 主审）",when:"任何沉淀进库/系统改动时",what:"密钥/隐私无泄露？无反模式？平台合规？注入/权限/依赖漏洞？",how:["密钥/Token/隐私泄露检查（明文硬编码=打回）","反模式检查（个人号私信/无闸门/无自愈/无备份）","平台合规（VK 批量群发/爬虫风控/API 条款）","注入/权限/依赖/LLM 安全"],bad:["密钥明文硬编码","个人号私信陌生用户","无触达闸门"],links:[{n:"OpenClaw 审计 skills",d:"skill-security-audit 等",u:"https://github.com/veb"}]},
-{st:"a1",t:"关3 · 需求关（Hermes 总审）",when:"任何沉淀进库/系统改动时",what:"这是用户真想要的吗？对得上三个目的吗？用时真有用？载体极简？",how:["对照 00_目标与决策准则","对号三个目的哪一条","用时真有用 or 吃灰","载体极简：没多造网页/工具"],bad:["「看起来进化」的装饰","需求对不上三个目的","又造一个网页"],links:[{n:"目标文档",d:"00_目标与决策准则",u:"/obs/成长系统/00_目标与决策准则.md"}]},
+{st:"a1",t:"关3 · 需求关（Hermes 总审）",when:"任何沉淀进库/系统改动时",what:"这是用户真想要的吗？对得上三个目的吗？用时真有用？载体极简？",how:["对照 00_目标与决策准则","对号三个目的哪一条","用时真有用 or 吃灰","载体极简：没多造网页/工具"],bad:["「看起来进化」的装饰","需求对不上三个目的","又造一个网页"],links:[{n:"目标文档",d:"00_目标与决策准则",u:"obs/成长系统/00_目标与决策准则.md"}]},
 {st:"a1",t:"关4 · 证据关（三家都要）",when:"任何沉淀进库/系统改动时",what:"每条沉淀有来源？标「已验证」是真实测？负向测试做了？反例写了？",how:["来源必须填（GitHub/路径/踩坑记录/客户反馈）","「已验证」必须真实测（禁假绿）","负向测试必须做","反例/不适用场景写清楚"],bad:["无来源沉淀","pytest 收集失败=测试存在","自测全绿=没问题"],links:[{n:"假绿识别",d:"live-system-audit skill",u:"https://github.com/veb"}]},
 /* 三审流水线 */
-{st:"a2",t:"三审流水线（完整执行）",when:"重要沉淀进库前",what:"提交沉淀→dsh 结构审→OpenClaw 安全审→Hermes 总审→裁决→结果回流。",how:["一审 dsh（结构关）→ 分数 0-5","二审 OpenClaw（安全关）→ 分数 0-5","三审 Hermes（需求+证据+裁决）→ 总判定","裁决：通过≥4/5 / 打回（必修项）/ 作废（方向错）","结果回流：坑→复盘区；经验→方法论区"],bad:["三智能体互相参考输出（非盲审）","打回只说不行不写必修项","审核无报告"],links:[{n:"三审流水线文档",d:"01_审核标准与三审流水线",u:"/obs/成长系统/01_审核标准与三审流水线.md"}]},
+{st:"a2",t:"三审流水线（完整执行）",when:"重要沉淀进库前",what:"提交沉淀→dsh 结构审→OpenClaw 安全审→Hermes 总审→裁决→结果回流。",how:["一审 dsh（结构关）→ 分数 0-5","二审 OpenClaw（安全关）→ 分数 0-5","三审 Hermes（需求+证据+裁决）→ 总判定","裁决：通过≥4/5 / 打回（必修项）/ 作废（方向错）","结果回流：坑→复盘区；经验→方法论区"],bad:["三智能体互相参考输出（非盲审）","打回只说不行不写必修项","审核无报告"],links:[{n:"三审流水线文档",d:"01_审核标准与三审流水线",u:"obs/成长系统/01_审核标准与三审流水线.md"}]},
 /* 审核报告(动态列表在 renderDir a3 特判) */
-{st:"a3",t:"审核报告 · 已归档 4 份",when:"需要追溯历史审核结论时",what:"复盘区/审核报告/ 已存 4 份真实审核报告（AUDIT-001/002 + 2 份候选入库），点 a3 直接列出并读全文。",how:["进入审核标准 → 点「审核报告」子目录","看到全部真实报告列表（标题/状态/摘要）","点某份 = 弹层读完整报告全文"],bad:["审核不落盘","报告遗失"],links:[{n:"复盘区目录",d:"审核报告归档处",u:"/obs/复盘区/审核报告/"}]},
+{st:"a3",t:"审核报告 · 已归档 4 份",when:"需要追溯历史审核结论时",what:"复盘区/审核报告/ 已存 4 份真实审核报告（AUDIT-001/002 + 2 份候选入库），点 a3 直接列出并读全文。",how:["进入审核标准 → 点「审核报告」子目录","看到全部真实报告列表（标题/状态/摘要）","点某份 = 弹层读完整报告全文"],bad:["审核不落盘","报告遗失"],links:[{n:"复盘区目录",d:"审核报告归档处",u:"obs/复盘区/审核报告/"}]},
 /* 审核资产 */
 {st:"a4",t:"dsh 审计能力清单",when:"一审（结构关）要派人时",what:"dsh 拥有的审计 skills：架构审计、bug 修复、代码审查、工程审计、Gate 验收证据包。",how:["awesome-architecture-audit 审结构","awesome-bug-fix 审 bug","awesome-code-review 审代码","engineering-audit 审工程","codex-gate-acceptance 备验收证据"],bad:["一审用错人（拿安全 skill 审结构）","审计报告不落盘"],links:[{n:"dsh skills 目录",d:"~/.dsh/skills/",u:"/skills/dsh/"}]},
 {st:"a4",t:"OpenClaw 审计能力清单",when:"二审（安全关）要派人时",what:"OpenClaw 拥有的安全审计 skills：安全审计、漏洞扫描、代码审查、根因分析。",how:["skill-security-audit 审安全","security-vuln-scanner 扫漏洞","code-review-sr 审代码","qa-bug-root-cause-analysis 查根因"],bad:["二审用错人","安全审查结果不回流"],links:[{n:"OpenClaw skills 目录",d:"~/.openclaw/workspace/skills/",u:"/skills/openclaw/"}]},
@@ -819,6 +844,12 @@ var COURSE_BOOKS = [
     {f:"courses/authority_03.md", t:"第3章 素材挂载·库存怎么变弹药(514视频/111簇/239词)"},
     {f:"courses/authority_04.md", t:"第4章 三份权威调研(原厂FDE/治理数据/工程标准)"},
     {f:"courses/authority_05.md", t:"第5章 方法论三件套MECE汇总(38FDE流程/39实战招式/40补缺)"}
+  ]},
+  {id:"adp-fde", title:"腾讯云 ADP · 前沿部署工程师(FDE)认证课程", icon:"☁️", desc:"腾讯云学院官方认证课 · 4章19节图文课 · AI基础→ADP平台能力→四模式实战→调试评测调优", cover:"官方原文+配图：标准模式/单工作流/Multi-Agent/Claw/智能工作台 五类应用模式实战 + Prompt/RAG/Workflow/Multi-Agent 调优", chapters:[
+    {f:"courses/adp_fde_01.md", t:"第1章 AI 和 Agent 基础(AI基础 / 大模型进化之路 / 智能体基础)"},
+    {f:"courses/adp_fde_02.md", t:"第2章 ADP 产品能力(是什么 / 基础·知识·任务执行能力 / 从开发到上线)"},
+    {f:"courses/adp_fde_03.md", t:"第3章 使用 ADP 开发智能体(方案设计 / 标准模式 / 单工作流 / Multi-Agent / Claw / 智能工作台)"},
+    {f:"courses/adp_fde_04.md", t:"第4章 评测与优化智能体(调试评测基础 / Prompt调优 / 知识库与RAG调优 / Workflow调优 / Multi-Agent调优)"}
   ]}
 ];
 window._curBookIdx = 0;   // 当前选中的书下标
@@ -938,10 +969,28 @@ function courseNoteSave(idx){
 function simpleMd(md){
   var lines = (md || "").split("\n");
   var out = "", inList = false, inQuote = false, inTable = false;
+  var inCode = false, codeBuf = [];
   function closeList(){ if(inList){ out += "</ul>"; inList = false; } }
   function closeQuote(){ if(inQuote){ out += "</blockquote>"; inQuote = false; } }
   function closeTable(){ if(inTable){ out += "</tbody></table>"; inTable = false; } }
   lines.forEach(function(line){
+    // 围栏代码块 ```text ... ``` （提示词/配置原文）
+    if(/^```/.test(line)){
+      closeList(); closeQuote(); closeTable();
+      if(!inCode){ inCode = true; codeBuf = []; }
+      else {
+        inCode = false;
+        out += "<pre style='background:#fbfaf6;border:1px solid #e6e0cd;border-left:3px solid #9bbf6a;border-radius:8px;padding:12px 14px;margin:12px 0;white-space:pre-wrap;word-break:break-word;font-size:12.5px;line-height:1.75;color:#3a3a3a;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'>" + esc(codeBuf.join("\n")) + "</pre>";
+      }
+      return;
+    }
+    if(inCode){ codeBuf.push(line); return; }
+    // 水平分隔线
+    if(/^\s*-{3,}\s*$/.test(line) || /^\s*\*{3,}\s*$/.test(line)){
+      closeList(); closeQuote(); closeTable();
+      out += "<hr style='border:0;border-top:1px dashed #ddd6c2;margin:20px 0'>";
+      return;
+    }
     var t = line.replace(/^#+\s*/, function(m){ return m; });
     // 表格: | a | b | 或 | --- | --- |
     if(/^\s*\|/.test(line)){
@@ -963,11 +1012,17 @@ function simpleMd(md){
       return;
     }
     if(inTable){ closeTable(); out += "</table>"; }
-    if(/^#{1,3}\s/.test(line)){
+    if(/^#{1,6}\s/.test(line)){
       closeList(); closeQuote();
       var lvl = line.match(/^(#+)/)[1].length;
       var txt = inlineMd(line.replace(/^#+\s*/, ""));
-      out += (lvl === 1 ? '<h2 style="font-size:20px;margin:18px 0 8px;color:#222">' : lvl === 2 ? '<h3 style="font-size:17px;margin:16px 0 6px;color:#333">' : '<h4 style="font-size:15px;margin:14px 0 4px;color:#444">') + txt + "</h" + (lvl===1?2:lvl===2?3:4) + ">";
+      var SZ = {1:"21px",2:"18px",3:"16px",4:"14.5px",5:"13.5px",6:"13px"};
+      var CO = {1:"#1f1f1f",2:"#2c2c2c",3:"#3a3a3a",4:"#4a4a4a",5:"#555",6:"#666"};
+      var hh = Math.min(lvl + 1, 6);
+      out += "<h" + hh + " style=\"font-size:" + SZ[lvl] + ";margin:18px 0 7px;color:" + CO[lvl] + ";line-height:1.5\">" + txt + "</h" + hh + ">";
+    } else if(/^!\[[^\]]*\]\([^)]+\)\s*$/.test(line.trim())){
+      closeList(); closeQuote();
+      out += imageMd(line.trim());
     } else if(/^\s*[-*]\s+/.test(line)){
       closeQuote();
       if(!inList){ out += "<ul>"; inList = true; }
@@ -990,8 +1045,20 @@ function simpleMd(md){
   closeList(); closeQuote(); closeTable();
   return out;
 }
+function imageMd(t){
+  var m = t.match(/^!\[([^\]]*)\]\(([^)]+)\)/);
+  if(!m) return "";
+  var alt = m[1], src = m[2];
+  return "<figure style='margin:16px 0;text-align:center'>" +
+    "<img src=\"" + esc(src) + "\" alt=\"" + esc(alt) + "\" loading=\"lazy\" referrerpolicy=\"no-referrer\" " +
+    "style='max-width:100%;height:auto;border:1px solid #e8e2d2;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.06)'" +
+    " onerror=\"this.parentNode.style.display='none'\">" +
+    (alt ? "<figcaption style='font-size:12px;color:#999;margin-top:7px'>" + esc(alt) + "</figcaption>" : "") +
+    "</figure>";
+}
 function inlineMd(t){
   return esc(t)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" referrerpolicy="no-referrer" style="max-width:100%;border-radius:6px;vertical-align:middle">')
     .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
     .replace(/\*([^*]+)\*/g, "<i>$1</i>")
     .replace(/`([^`]+)`/g, "<code style='background:#f4f4f2;padding:1px 5px;border-radius:4px;font-size:.9em'>$1</code>")
@@ -1504,7 +1571,7 @@ document.addEventListener("click", function(ev){
 });
 var MG = null, MG_TAB = "map";
 function vlOpenDoc18(){
-  openFullReport("/obs/成长系统/18_视频方法论沉淀_v2.md", "视频方法论沉淀 18", "抖音 " + (vtotal() || "500+") + " 条提炼 · 9大主题方法论总纲 + 明细", "q18doc");
+  openFullReport("obs/成长系统/18_视频方法论沉淀_v2.md", "视频方法论沉淀 18", "抖音 " + (vtotal() || "500+") + " 条提炼 · 9大主题方法论总纲 + 明细", "q18doc");
 }
 function vlOpenMethod(){
   var show = function(){
@@ -1518,7 +1585,7 @@ function vlOpenMethod(){
     if(modal) modal.style.maxWidth = "860px";
   };
   if(MG){ show(); return; }
-  fetch("/method_guide.json").then(function(r){ return r.json(); })
+  fetch("method_guide.json").then(function(r){ return r.json(); })
   .then(function(d){ MG = d; show(); })
   .catch(function(e){ alert("加载失败: " + e); });
 }
@@ -1723,19 +1790,19 @@ function renderMap(content, eyebrow, title, crumb){
   crumb.textContent = "09 关卡地图 · 10 产出物模板 · 11 真实案例库 · 12 术语词典 · 14 装机手册";
   var cur = window._mapTab || "09";
   var tabs = [
-    {id:"09", label:"🗺️ 09 关卡地图", desc:"有哪些关", src:"/obs/成长系统/09_企业AI落地全流程关卡地图_v1.md", viz:true},
-    {id:"01", label:"🧪 01 审核标准", desc:"审计Agent项目/找Bug的SOP", src:"/obs/成长系统/01_审核标准与三审流水线.md"},
-    {id:"10", label:"📄 10 产出物模板", desc:"每关交什么", src:"/obs/成长系统/10_每关产出物模板_v1.md"},
-    {id:"11", label:"🏆 11 真实案例库", desc:"案例→组合", src:"/obs/成长系统/11_真实案例库_案例与组合理由_v1.md"},
-    {id:"12", label:"📖 12 术语词典", desc:"词是啥意思", src:"/obs/成长系统/12_关键术语词典_v1.md"},
-    {id:"15", label:"📊 15 数据体系", desc:"企业AI落地的数据全景", src:"/obs/成长系统/15_企业AI落地数据完整体系_v1.md"},
-    {id:"16", label:"🔬 16 调研结论", desc:"OpenClaw+dsh 双agent数据调研", src:"/obs/成长系统/16_数据调研双agent结论_v1.md"},
-    {id:"17", label:"🧠 17 转型知识库", desc:"企业AI转型落地知识库(双Agent融合)", src:"/obs/成长系统/17_企业AI转型落地知识库_v1.md"},
-    {id:"14", label:"🛠️ 14 装机手册", desc:"给客户装 NIFTY+Hermes（Win/Mac）", src:"/obs/成长系统/14_装机手册_v1.md"},
-    {id:"23", label:"📦 23 载体选型", desc:"用什么承载客户的AI程序(7形态+决策树)", src:"/obs/成长系统/23_交付载体怎么选_v1.md"},
-    {id:"24", label:"🧰 24 零件装配", desc:"怎么知道项目该装哪些零件(6步推导)", src:"/obs/成长系统/24_项目零件装配清单_v1.md"},
-    {id:"25", label:"🏗️ 25 工程全景", desc:"程序从0被做出来的全流程(MECE 12阶段)", src:"/obs/成长系统/25_程序全流程工程全景_v1.md"},
-    {id:"27", label:"📚 27 权威调研", desc:"deerflow 软件工程+企业AI落地全景", src:"/obs/成长系统/27_deerflow权威调研报告_软件工程与企业AI落地_v1.md"}
+    {id:"09", label:"🗺️ 09 关卡地图", desc:"有哪些关", src:"obs/成长系统/09_企业AI落地全流程关卡地图_v1.md", viz:true},
+    {id:"01", label:"🧪 01 审核标准", desc:"审计Agent项目/找Bug的SOP", src:"obs/成长系统/01_审核标准与三审流水线.md"},
+    {id:"10", label:"📄 10 产出物模板", desc:"每关交什么", src:"obs/成长系统/10_每关产出物模板_v1.md"},
+    {id:"11", label:"🏆 11 真实案例库", desc:"案例→组合", src:"obs/成长系统/11_真实案例库_案例与组合理由_v1.md"},
+    {id:"12", label:"📖 12 术语词典", desc:"词是啥意思", src:"obs/成长系统/12_关键术语词典_v1.md"},
+    {id:"15", label:"📊 15 数据体系", desc:"企业AI落地的数据全景", src:"obs/成长系统/15_企业AI落地数据完整体系_v1.md"},
+    {id:"16", label:"🔬 16 调研结论", desc:"OpenClaw+dsh 双agent数据调研", src:"obs/成长系统/16_数据调研双agent结论_v1.md"},
+    {id:"17", label:"🧠 17 转型知识库", desc:"企业AI转型落地知识库(双Agent融合)", src:"obs/成长系统/17_企业AI转型落地知识库_v1.md"},
+    {id:"14", label:"🛠️ 14 装机手册", desc:"给客户装 NIFTY+Hermes（Win/Mac）", src:"obs/成长系统/14_装机手册_v1.md"},
+    {id:"23", label:"📦 23 载体选型", desc:"用什么承载客户的AI程序(7形态+决策树)", src:"obs/成长系统/23_交付载体怎么选_v1.md"},
+    {id:"24", label:"🧰 24 零件装配", desc:"怎么知道项目该装哪些零件(6步推导)", src:"obs/成长系统/24_项目零件装配清单_v1.md"},
+    {id:"25", label:"🏗️ 25 工程全景", desc:"程序从0被做出来的全流程(MECE 12阶段)", src:"obs/成长系统/25_程序全流程工程全景_v1.md"},
+    {id:"27", label:"📚 27 权威调研", desc:"deerflow 软件工程+企业AI落地全景", src:"obs/成长系统/27_deerflow权威调研报告_软件工程与企业AI落地_v1.md"}
   ];
   var curTab = null;
   tabs.forEach(function(t){ if(t.id === cur) curTab = t; });
@@ -1927,7 +1994,7 @@ function loadTermAssets(cb){
   var done = 0, need = 3;
   function fin(){ if(++done >= need && cb) cb(); }
   // 1. 词典 md → 词条索引
-  fetch("/obs/成长系统/12_关键术语词典_v1.md").then(function(r){ return r.text(); }).then(function(md){
+  fetch("obs/成长系统/12_关键术语词典_v1.md").then(function(r){ return r.text(); }).then(function(md){
     TERM_IDX = {};
     var sec = "";
     md.split("\n").forEach(function(line){
@@ -1964,12 +2031,12 @@ function loadTermAssets(cb){
     fin();
   }).catch(function(){ fin(); });
   // 2. kb_links.json → 词条关联(只有id)
-  fetch("/kb_links.json").then(function(r){ return r.json(); }).then(function(d){
+  fetch("kb_links.json").then(function(r){ return r.json(); }).then(function(d){
     KB_LINKS = d.terms || {};
     fin();
   }).catch(function(){ fin(); });
   // 3. videos_library.json → 视频详情(懒加载)
-  fetch("/videos_library.json").then(function(r){ return r.json(); }).then(function(d){
+  fetch("videos_library.json").then(function(r){ return r.json(); }).then(function(d){
     VL_ITEMS = {};
     (d.cats||[]).forEach(function(c){ (c.items||[]).forEach(function(it){ VL_ITEMS[it.id] = it; }); });
     fin();
@@ -1989,7 +2056,8 @@ function enrichTerms(container){
     acceptNode: function(node){
       var p = node.parentElement;
       if(!p) return NodeFilter.FILTER_REJECT;
-      if(p.closest && p.closest("code,pre,a,h1,h2,h3,button,.kterm,.docbar")) return NodeFilter.FILTER_REJECT;
+      /* 标题(h1-h6)不高亮: 术语高亮只服务正文; 标题被拆分会吃掉括号内的文字 */
+      if(p.closest && p.closest("code,pre,a,h1,h2,h3,h4,h5,h6,button,.kterm,.docbar")) return NodeFilter.FILTER_REJECT;
       return NodeFilter.FILTER_ACCEPT;
     }
   });
@@ -2224,7 +2292,7 @@ function loadMapDoc(tab){
     if(TERM_IDX){ enhanceDoc(bodyEl); }
     else { loadTermAssets(function(){ enhanceDoc(bodyEl); }); }
     /* 文档内 /obs/ 链接 → 弹层阅读完整 md (两份长报告等); #锚点 → 页内滚动 */
-    box.querySelectorAll('a[href*="/obs/"]').forEach(function(a){
+    box.querySelectorAll('a[href*="obs/"]').forEach(function(a){
       a.setAttribute("data-report", a.getAttribute("href"));
       a.style.cursor = "pointer";
       a.addEventListener("click", function(ev2){
@@ -2446,12 +2514,12 @@ function quickDocs(){
   var box = document.getElementById("quickDocs");
   if(!box) return;
   var docs = [
-    {n:"👋 00 使用指南", d:"每天怎么用这系统", p:"/obs/成长系统/00_使用指南_给王昕.md"},
-    {n:"🗺️ 09 关卡地图", d:"接项目→看自己在哪关", p:"/obs/成长系统/09_企业AI落地全流程关卡地图_v1.md"},
-    {n:"📄 10 产出物模板", d:"每关要交什么", p:"/obs/成长系统/10_每关产出物模板_v1.md"},
-    {n:"🏆 11 案例库", d:"案例→功能组合", p:"/obs/成长系统/11_真实案例库_案例与组合理由_v1.md"},
-    {n:"📖 12 术语词典", d:"专业词大白话", p:"/obs/成长系统/12_关键术语词典_v1.md"},
-    {n:"📚 27 权威调研", d:"软件工程+企业AI落地全景", p:"/obs/成长系统/27_deerflow权威调研报告_软件工程与企业AI落地_v1.md"}
+    {n:"👋 00 使用指南", d:"每天怎么用这系统", p:"obs/成长系统/00_使用指南_给王昕.md"},
+    {n:"🗺️ 09 关卡地图", d:"接项目→看自己在哪关", p:"obs/成长系统/09_企业AI落地全流程关卡地图_v1.md"},
+    {n:"📄 10 产出物模板", d:"每关要交什么", p:"obs/成长系统/10_每关产出物模板_v1.md"},
+    {n:"🏆 11 案例库", d:"案例→功能组合", p:"obs/成长系统/11_真实案例库_案例与组合理由_v1.md"},
+    {n:"📖 12 术语词典", d:"专业词大白话", p:"obs/成长系统/12_关键术语词典_v1.md"},
+    {n:"📚 27 权威调研", d:"软件工程+企业AI落地全景", p:"obs/成长系统/27_deerflow权威调研报告_软件工程与企业AI落地_v1.md"}
   ];
   var h = '<div style="margin:4px 0 0;display:flex;gap:6px;flex-wrap:wrap">';
   docs.forEach(function(d, i){
@@ -3339,7 +3407,7 @@ function openProjectArchive(file, title){
   if(!box) return;
   box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">📁 项目档案读取中…</div>';
   vlShowModal("📁 项目档案 · " + name);
-  var url = "/obs/项目库/" + encodeURIComponent(file);
+  var url = "obs/项目库/" + encodeURIComponent(file);
   fetch(url).then(function(r){ return r.text(); }).then(function(md){
     var wrap = document.createElement("div");
     wrap.innerHTML = mdToHtml(md);
@@ -3421,7 +3489,7 @@ function renderDir(content, eyebrow, title, crumb){
       });
       aHtml += '</div><div id="mapDocBox"></div>';
       content.innerHTML = aHtml;
-      loadMapDoc({id:"01", label:"🧪 01 审核标准", desc:"双Agent审计方法论全文 · 13类Bug/四关/三审/调试/权限", src:"/obs/成长系统/01_审核标准与三审流水线.md"});
+      loadMapDoc({id:"01", label:"🧪 01 审核标准", desc:"双Agent审计方法论全文 · 13类Bug/四关/三审/调试/权限", src:"obs/成长系统/01_审核标准与三审流水线.md"});
       if(!TERM_IDX) loadTermAssets();
       return;
     }
@@ -3481,7 +3549,7 @@ document.addEventListener("click", function(e){
   if(rep){
     var fn = rep.getAttribute("data-report");
     if(fn){
-      openFullReport("/obs/复盘区/审核报告/" + encodeURIComponent(fn).replace(/%20/g, "%20"));
+      openFullReport("obs/复盘区/审核报告/" + encodeURIComponent(fn).replace(/%20/g, "%20"));
     }
     return;
   }
