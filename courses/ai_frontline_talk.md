@@ -443,4 +443,7 @@
 
 ---
 
-> **本页为视频口播转写后的结构化精读（非逐字稿）**，原始转写稿存放在 `~/bili_work/BV1gZtg6HEBY/transcript.txt`，可溯源核对。
+> **本页为视频口播转写后的结构化精读（非逐字稿）** — 上篇按对谈原论述框架分 12 章，逐段保留案例、数字与比喻；下面另附**完整逐字稿原文**与本地原始文件，可溯源核对。
+>
+> - 📄 [完整逐字稿原文（whisper 转写 · 未校对，84KB）](courses/ai_frontline_talk_transcript.txt) ← 点开即读全片口播文字
+> - 🗂 原始文件：`~/bili_work/BV1gZtg6HEBY/{audio.m4a, transcript.txt}`
