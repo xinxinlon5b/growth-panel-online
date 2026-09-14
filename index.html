@@ -866,19 +866,45 @@ var COURSE_BOOKS = [
   ]}
 ];
 window._curBookIdx = 0;   // 当前选中的书下标
+/* 🆕 最新入库: 每次新书/新章入库在这里登记, 读书页首屏置顶显示 + 一点直达 */
+var NEW_ITEMS = [
+  {book:"agent-practice", ch:3, t:"AI最前沿的人，已经不聊模型了", d:"2026-09-14",
+   note:"易论AI×继刚×歸藏×橘子对谈 · 落地靠服务/只搞定5%的人/越土越吃香 · 附完整逐字稿"},
+];
+function openNew(i){
+  var it = NEW_ITEMS[i]; if(!it) return;
+  var bi = -1;
+  COURSE_BOOKS.forEach(function(b, k){ if(b.id === it.book) bi = k; });
+  if(bi < 0) { toast("书目未找到: " + it.book); return; }
+  window._curBookIdx = bi;
+  window._courseCh = it.ch;
+  renderCourse(document.getElementById("content"), document.getElementById("eyebrowText"), document.getElementById("pageTitle"), document.getElementById("crumb"));
+}
 function curBook(){ return COURSE_BOOKS[window._curBookIdx] || COURSE_BOOKS[0]; }
 function setBook(i){
   if(i<0 || i>=COURSE_BOOKS.length) return;
   window._curBookIdx = i;
   window._courseCh = 0;
   renderCourse(document.getElementById("content"), document.getElementById("eyebrowText"), document.getElementById("pageTitle"), document.getElementById("crumb"));
-  courseOpen(0);
 }
 function renderCourse(content, eyebrow, title, crumb){
   eyebrow.textContent = "READING";
   title.textContent = "📚 读书 · 整本读，真学会";
   crumb.textContent = "不再跳 GitHub——书就在这，一章章读，勾进度，要点存进 Obsidian";
   var html = '';
+  // 🆕 最新入库 (置顶, 一点直达)
+  if(NEW_ITEMS && NEW_ITEMS.length){
+    html += '<div class="course-newbar" style="background:linear-gradient(135deg,#fff8e1,#fdf3d0);border:1px solid #e8d79a;border-radius:14px;padding:12px 14px;margin-bottom:14px">' +
+      '<div style="font-size:12px;font-weight:800;color:#8a6d1f;margin-bottom:8px">🆕 最新入库（点一下直接打开）</div>';
+    NEW_ITEMS.forEach(function(it, i){
+      html += '<div onclick="openNew(' + i + ')" style="cursor:pointer;display:flex;gap:10px;align-items:baseline;padding:8px 10px;border-radius:10px;background:#fff;border:1px solid #efe3bd;margin-bottom:6px">' +
+        '<span style="font-size:11px;color:#a08a45;flex:0 0 74px">' + esc(it.d) + '</span>' +
+        '<span style="font-size:13px;font-weight:700;color:#6b5410;flex:0 1 auto">📄 ' + esc(it.t) + '</span>' +
+        '<span style="font-size:11px;color:#8a7a52;flex:1 1 auto">' + esc(it.note || '') + '</span>' +
+        '<span style="font-size:11px;color:#b08a20;flex:0 0 auto">打开 →</span></div>';
+    });
+    html += '</div>';
+  }
   // 顶部: 书架(所有书横排切换)
   html += '<div class="course-shelf" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
   COURSE_BOOKS.forEach(function(b, bi){
@@ -915,6 +941,8 @@ function renderCourse(content, eyebrow, title, crumb){
     '</div></div>';
   html += '</div>';
   content.innerHTML = html;
+  // 自动打开当前章(避免进来是空白的「点左边章节」占位, 让内容一眼可见)
+  courseOpen(window._courseCh || 0);
 }
 function courseDone(bid, idx){
   try{ var d = JSON.parse(localStorage.getItem("grow_course_" + bid) || "{}"); return !!d["c" + idx]; }catch(e){ return false; }
