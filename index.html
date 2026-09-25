@@ -1843,7 +1843,8 @@ function renderMap(content, eyebrow, title, crumb){
     {id:"23", label:"📦 23 载体选型", desc:"用什么承载客户的AI程序(7形态+决策树)", src:"obs/成长系统/23_交付载体怎么选_v1.md"},
     {id:"24", label:"🧰 24 零件装配", desc:"怎么知道项目该装哪些零件(6步推导)", src:"obs/成长系统/24_项目零件装配清单_v1.md"},
     {id:"25", label:"🏗️ 25 工程全景", desc:"程序从0被做出来的全流程(MECE 12阶段)", src:"obs/成长系统/25_程序全流程工程全景_v1.md"},
-    {id:"27", label:"📚 27 权威调研", desc:"deerflow 软件工程+企业AI落地全景", src:"obs/成长系统/27_deerflow权威调研报告_软件工程与企业AI落地_v1.md"}
+    {id:"27", label:"📚 27 权威调研", desc:"deerflow 软件工程+企业AI落地全景", src:"obs/成长系统/27_deerflow权威调研报告_软件工程与企业AI落地_v1.md"},
+    {id:"44", label:"💡 44 实战教训", desc:"电商定价与数据一致性（真金白银换来的3条）", src:"obs/成长系统/44_实战教训_电商定价与数据一致性_v1.md"}
   ];
   var curTab = null;
   tabs.forEach(function(t){ if(t.id === cur) curTab = t; });
@@ -1854,7 +1855,7 @@ function renderMap(content, eyebrow, title, crumb){
     html += '<button class="ask-btn" style="' + (cur===t.id ? "background:var(--lime);color:#18392f" : "background:transparent;color:var(--ink);border:1px solid #d8d2c0") + '" onclick="window._mapTab=\'' + t.id + '\';renderAll()">' + t.label + '</button>';
   });
   html += '</div>';
-  html += '<p style="margin:10px 0 0;font-size:12px;color:#65736e">' + (cur==="09" ? '🗺️ 接项目→先看自己在哪一关→把这一关的卡点开、照着做→过了才进下一关（点击节点看每关要做什么）' : cur==="10" ? '📄 关卡过了没=看产出物有没有。每关要交什么文档，做出来了=过关' : cur==="11" ? '🏆 新项目→找最像的案例→参考必选组合→工作台「分析可行性」验证缺啥' : cur==="12" ? '📖 听到不懂的词→来这查。每个词=大白话+什么时候用+真实例子' : cur==="15" ? '📊 给客户做 AI 落地时「数据」怎么分类/加工/上工具。11问盘问清单 + 加工链 + Obsidian 定位' : cur==="16" ? '🔬 OpenClaw + dsh 双 agent 数据调研原文要点：权威结论+对比表，方便对照学习' : cur==="17" ? '🧠 企业 AI 转型落地全知识：真实情况→前期准备→SOP流程→避坑，7 类卡片点开即学' : cur==="01" ? '🧪 审 Agent 项目/找 Bug 的完整标准：13类Bug地图→四关清单→三审流水线→调试SOP→测试金字塔→红队安全，每词可点' : cur==="14" ? '🛠️ 给客户电脑装 NIFTY STUDIO + Hermes 桌面版：完整步骤（Mac/Windows 分开）+ 特殊情况速查 + 方法复盘，小白照着做' : '📖 听到不懂的词→来这查。每个词=大白话+什么时候用+真实例子') + '</p></div>';
+  html += '<p style="margin:10px 0 0;font-size:12px;color:#65736e">' + (cur==="09" ? '🗺️ 接项目→先看自己在哪一关→把这一关的卡点开、照着做→过了才进下一关（点击节点看每关要做什么）' : cur==="10" ? '📄 关卡过了没=看产出物有没有。每关要交什么文档，做出来了=过关' : cur==="11" ? '🏆 新项目→找最像的案例→参考必选组合→工作台「分析可行性」验证缺啥' : cur==="12" ? '📖 听到不懂的词→来这查。每个词=大白话+什么时候用+真实例子' : cur==="15" ? '📊 给客户做 AI 落地时「数据」怎么分类/加工/上工具。11问盘问清单 + 加工链 + Obsidian 定位' : cur==="16" ? '🔬 OpenClaw + dsh 双 agent 数据调研原文要点：权威结论+对比表，方便对照学习' : cur==="17" ? '🧠 企业 AI 转型落地全知识：真实情况→前期准备→SOP流程→避坑，7 类卡片点开即学' : cur==="01" ? '🧪 审 Agent 项目/找 Bug 的完整标准：13类Bug地图→四关清单→三审流水线→调试SOP→测试金字塔→红队安全，每词可点' : cur==="14" ? '🛠️ 给客户电脑装 NIFTY STUDIO + Hermes 桌面版：完整步骤（Mac/Windows 分开）+ 特殊情况速查 + 方法复盘，小白照着做' : cur==="44" ? '💡 三条用真金白银换来的教训：成本只留一份 · 费率逐项确认 · 警告不是错误' : '📖 听到不懂的词→来这查。每个词=大白话+什么时候用+真实例子') + '</p></div>';
   html += '<div id="mapDocBox"></div>';
   content.innerHTML = html;
   if(curTab.viz) loadMapViz(); else if(curTab.id==='14') loadInstallGuide(curTab); else loadMapDoc(curTab);
