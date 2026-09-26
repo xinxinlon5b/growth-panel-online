@@ -4348,5 +4348,28 @@ vf.textContent = "成长系统 " + window.GS_VERSION + " · 如按钮无响应�
 document.body.appendChild(vf);
 </script>
 <script src="health_check.js"></script>
+<!-- GS_COUNTER v2 · 访问统计（起算 2026-09-26）· 绝密勿删 -->
+<script>
+(function(){
+  try{
+    var h = location.hostname || "";
+    if(h === "127.0.0.1" || h === "localhost" || h === "" || location.protocol === "file:") return;
+    if(/[?&]nocount=1/.test(location.search)) return;
+    var NS = "zz-altai-gp-26a7c1";
+    var d = new Date();
+    var day = "" + d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0");
+    function ping(key){
+      try { (new Image()).src = "https://abacus.jasoncameron.dev/hit/" + NS + "/" + key + "?_=" + Date.now(); } catch(e){}
+    }
+    ping("pvtotal");  ping("pv" + day);
+    var seen = false;
+    try { seen = localStorage.getItem("gs_seen_" + day) === "1"; } catch(e){}
+    if(!seen){
+      try { localStorage.setItem("gs_seen_" + day, "1"); } catch(e){}
+      ping("uvtotal"); ping("uv" + day);
+    }
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
